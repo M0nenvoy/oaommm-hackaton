@@ -16,6 +16,9 @@ class login(BaseModel):
     username: str
     password: str
 
+class history(BaseModel):
+    username: str
+
 class upload(BaseModel):
     token: str
     files: list[UploadFile]

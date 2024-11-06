@@ -42,6 +42,10 @@ async def upload(files: list[UploadFile], token: str):
     if not ok:
         raise HTTPException(status_code=400, detail=error)
     
+@app.post("/user/history")
+async def history(rq: dto.history):
+    return api.get_messages_from_history(rq.username)
+    
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
@@ -54,6 +58,7 @@ async def websocket_endpoint(websocket: WebSocket):
             logger.error("Сообщение должно содержать 'username' и 'msg'")
             continue
         response = api.process_message(data["username"], data["msg"])
+        api.add_message_to_history(data["msg"], data["username"])
         await websocket.send_json({
             "msg": response
         })
