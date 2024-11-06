@@ -53,7 +53,7 @@ async def websocket_endpoint(websocket: WebSocket):
         except Exception:
             logger.error("Сообщение должно содержать 'username' и 'msg'")
             continue
-        response = await api.process_message(data["username"], data["msg"])
+        response = api.process_message(data["username"], data["msg"])
         await websocket.send_json({
-            "msg": "привет"
+            "msg": response
         })
