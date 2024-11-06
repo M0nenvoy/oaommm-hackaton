@@ -1,0 +1,39 @@
+.place {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  cursor: pointer;
+  background: white;
+  color: #222;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  user-select: none;
+}
+
+.name {
+  font-size: 20px;
+}
+
+.icon svg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  fill: #222;
+}
+
+.container {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  color: #222;
+  border-radius: 12px;
+}
+
+.option {
+  padding: 10px;
+  text-align: center;
+}
