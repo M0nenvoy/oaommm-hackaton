@@ -1,0 +1,46 @@
+.containerPlace {
+  display: flex;
+}
+
+.place {
+  width: 200px;
+  height: 100vh;
+  /* position: fixed; */
+  /* top: 0; */
+  /* bottom: 0; */
+  background: white;
+  color: #222;
+  transition: all .2s ease;
+}
+
+.placeLeft {
+  left: 0;
+}
+
+.placeRight {
+  right: 0;
+}
+
+.close {
+  margin-top: 20px;
+  height: fit-content;
+  background: black;
+  color: white;
+  cursor: pointer;
+  padding: 20px;
+  user-select: none;
+}
+
+.close-no-active {
+  transform: translateX(-200px);
+}
+/* 
+.closeRight {
+  position: absolute;
+  right: 200px;
+  top: 20px;
+  background: black;
+  color: white;
+  cursor: pointer;
+  padding: 20px;
+} */
