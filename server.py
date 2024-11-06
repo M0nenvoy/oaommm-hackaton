@@ -55,5 +55,5 @@ async def websocket_endpoint(websocket: WebSocket):
             continue
         response = await api.process_message(data["username"], data["msg"])
         await websocket.send_json({
-            "msg": response
+            "msg": "привет"
         })

@@ -48,5 +48,5 @@ async def upload(username: str, password: str, files: list[UploadFile]):
             await file.close()
     return (True, None)
 
-async def process_message(msg: str):
+async def process_message(msg: str, username: str):
     return str
