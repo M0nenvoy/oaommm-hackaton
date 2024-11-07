@@ -2,7 +2,8 @@ from pydantic import BaseModel
 from fastapi import UploadFile
 
 class token(BaseModel):
-    token: str
+    access_token: str
+    token_type: str
 
 class status(BaseModel):
     status: str

@@ -1,14 +1,17 @@
 import os
 import logging
 
+from typing import Annotated
+
 import dto
 import api
 import misc
 
 from fastapi import (
     HTTPException, UploadFile, FastAPI,
-    WebSocket
+    WebSocket, Depends
 )
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -24,23 +27,33 @@ app.add_middleware(
 
 api.setup()
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
+    username, _ = misc.detokenize(token)
+    return username
+
 @app.get("/checkhealth")
-def checkhealth():
+def checkhealth(token: Annotated[str, Depends(get_current_user)]):
     return { "status": "ok" }
 
-@app.post("/user/register")
+@app.get("/user")
+def user(username: Annotated[str, Depends(get_current_user)]):
+    return { "username": username }
+
+@app.post("/register")
 def register(rq: dto.register):
     ok, error = api.register(rq.username, rq.password)
     if not ok:
         raise HTTPException(status_code=400, detail=error)
     return dto.token(token = misc.tokenize(rq.username, rq.password))
 
-@app.post("/user/login")
-def login(rq: dto.login):
-    ok, error = api.login(rq.username, rq.password)
+@app.post("/token")
+def login(fd: Annotated[OAuth2PasswordRequestForm, Depends()]):
+    ok, error = api.login(fd.username, fd.password)
     if not ok:
         raise HTTPException(status_code=400, detail=error)
-    return dto.token(token = misc.tokenize(rq.username, rq.password))
+    return dto.token(access_token=misc.tokenize(fd.username, fd.password), token_type="bearer")
 
 @app.post("/user/upload")
 async def upload(files: list[UploadFile], token: str):
