@@ -1,0 +1,99 @@
+.modalWrapper {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, .5);
+}
+
+.modal {
+  background: #5d5c61;
+  width: 300px;
+  border-radius: 12px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+}
+
+.name {
+  margin-right: auto;
+}
+
+.close {
+  cursor: pointer;
+}
+
+.body {
+  padding: 10px;
+}
+
+.container {
+  margin-bottom: 20px;
+  background: #7395ae;
+}
+
+.fileUploader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.uploadContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.uploadButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  background-color: #379683;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  width: 100%;
+}
+
+.uploadButton svg {
+  margin-right: 10px;
+}
+
+.uploadButton svg {
+  width: 40px;
+  height: 40px;
+}
+
+.fileUploader1 {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  position: absolute;
+  bottom: -90px;
+  right: 0;
+  left: 0;
+}
+
+.uploadListContainer {
+  position: absolute;
+  width: 300px;
+  right: -300px;
+  background: white;
+}
+
+.uploadList {
+  width: 100%;
+  position: relative;
+  z-index: 1;
+}

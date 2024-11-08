@@ -18,7 +18,7 @@ function Chat() {
 
   ws.onmessage = function(event) {
     setForm([...form, {
-      msg: event.data,
+      msg: JSON.parse(event.data).msg,
       who: ''
     }])
 

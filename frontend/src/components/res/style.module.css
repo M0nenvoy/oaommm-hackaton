@@ -1,0 +1,39 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: auto;
+  overflow-y: auto;
+  height: max-content;
+  flex-grow: 1;
+  margin-bottom: 10px;
+}
+
+.btn {
+  padding: 20px;
+  color: white;
+  background: #7395ae;
+  border-radius: 16px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: all .2s ease;
+  user-select: none;
+}
+.btn:hover {
+  background: #557A95;
+}
+
+.item {
+  background: #379683;
+  border-radius: 12px;
+  padding: 10px;
+  color: white;
+  cursor: pointer;
+  transition: all .2s ease;
+}
+.item:hover {
+  background: #B1A296;
+}
+
+.item:not(:last-child) {
+  margin-bottom: 10px;
+}

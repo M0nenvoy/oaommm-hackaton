@@ -2,7 +2,7 @@
   display: flex;
 }
 
-.place {
+.placeStart {
   width: 200px;
   height: 100vh;
   /* position: fixed; */
@@ -11,6 +11,29 @@
   background: white;
   color: #222;
   transition: all .2s ease;
+  overflow: auto;
+  direction: rtl;
+  text-align: center;
+}
+
+.placeEnd {
+  width: 200px;
+  height: 100vh;
+  max-height: 100vh;
+  /* position: fixed; */
+  /* top: 0; */
+  /* bottom: 0; */
+  color: #222;
+  transition: all .2s ease;
+  text-align: center;
+
+  display: flex;
+  flex-direction: column;
+
+  background: #5d5c61;
+  padding: 0 10px;
+
+  overflow: hidden;
 }
 
 .placeLeft {
