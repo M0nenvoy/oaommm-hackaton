@@ -2,6 +2,8 @@ import os
 
 import config
 
+from fastapi import UploadFile
+
 def setup():
     if not os.path.isdir(config.USERS_DIR):
         os.makedirs(config.USERS_DIR)
@@ -78,3 +80,8 @@ def user_history_entry_set(username: str, entry: str, data: str):
     with open(user_history_entry_path(username, entry), "w", encoding='utf-8') as history_file:
         history_file.write(data)
 
+
+def user_save_doc(username: str, file: UploadFile):
+    content = file.file.read()
+    with open(f"{config.DOCS_DIR}/{file.filename}", "wb") as f:
+        f.write(content)

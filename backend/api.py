@@ -26,24 +26,18 @@ def credentials_validate(username: str, password: str) -> bool:
     if db.user_password_get(username) != password:
         raise Exception("Неверный пароль")
 
-async def upload(username: str, password: str, files: list[UploadFile]):
+async def upload(username: str, files: list[UploadFile]):
     userpath = "{users}/{username}".format(users=config.USERS_DIR, username=username)
     if not os.path.isdir(userpath):
-        return (False, "Плохой токен")  
-    with open("{userpath}/{password}".format(userpath=userpath, password=config.PASSWORD_FILE), "r") as pfd:
-        if not password == pfd.read():
-            return (False, "Плохой токен")
+        raise Exception("Пользователь не существует")  
     for file in files:
         try:
-            content = file.file.read()
-            with open("{userpath}/{filename}".format(userpath=userpath, filename=file.filename), "wb") as f:
-                f.write(content)
+            db.user_save_doc(username, file)
         except Exception as e:
             logger.warning(e)
-            return (False, "Не удалось обработать 1 или более файлов")
+            raise Exception("Не удалось обработать 1 или более файлов: " + str(e))
         finally:
             await file.close()
-    return (True, None)
 
 
 def add_message_to_history(username: str, entry: str, msg: str):
