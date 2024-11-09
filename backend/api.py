@@ -3,36 +3,31 @@ import json
 import config
 import logging
 
+import db
+import dto
+
 logger = logging.getLogger(__name__)
 
-from datetime import date
+from datetime import datetime
 from fastapi import UploadFile
 
 def setup():
-    if not os.path.isdir(config.USERS):
-        os.makedirs(config.USERS)
+    db.setup()
 
 def register(username: str, password: str):
-    userpath = "{users}/{username}".format(users=config.USERS, username=username)
-    if os.path.isdir(userpath):
-        return (False, "Пользователь уже существует")
-    os.makedirs(f"{userpath}/{config.DOCS_DIR}")
-    with open("{userpath}/{password}".format(userpath=userpath, password=config.PASSWORD_FILE), "w") as pfd:
-        pfd.write(password)
+    if not db.user_dir_exists(username):
+        db.user_dir_make(username)
+    db.user_password_set(username, password)
+    db.user_history_dir_make(username)
 
-    return (True, None)
-
-def login(username: str, password: str):
-    userpath = "{users}/{username}".format(users=config.USERS, username=username)
-    if not os.path.isdir(userpath):
-        return (False, "Пользователь не существует")
-    with open("{userpath}/{password}".format(userpath=userpath, password=config.PASSWORD_FILE), "r") as pfd:
-        if not password == pfd.read():
-            return (False, "Неверный пароль")
-    return (True, None)
+def credentials_validate(username: str, password: str) -> bool:
+    if not db.user_dir_exists(username):
+        raise Exception("Пользователь не существует")
+    if db.user_password_get(username) != password:
+        raise Exception("Неверный пароль")
 
 async def upload(username: str, password: str, files: list[UploadFile]):
-    userpath = "{users}/{username}".format(users=config.USERS, username=username)
+    userpath = "{users}/{username}".format(users=config.USERS_DIR, username=username)
     if not os.path.isdir(userpath):
         return (False, "Плохой токен")  
     with open("{userpath}/{password}".format(userpath=userpath, password=config.PASSWORD_FILE), "r") as pfd:
@@ -50,31 +45,40 @@ async def upload(username: str, password: str, files: list[UploadFile]):
             await file.close()
     return (True, None)
 
-def process_message(msg: str, username: str):
-    return msg
 
-def add_message_to_history(msg: str, username: str):
-    userpath = f"{config.USERS}/{username}"
-    if not os.path.isdir(userpath):
-        raise Exception(f"Пользователя с ником {username} нет")
-    if not os.path.isdir(f"{userpath}/{config.HISTORY_DIR}"):
-        os.makedirs(f"{userpath}/{config.HISTORY_DIR}")
-    with open(f"{userpath}/{config.HISTORY_DIR}/{config.HISTORY_FILE}", "w+", encoding='utf-8') as hfd:
-        try:
-            history = json.loads(hfd.read())
-        except json.decoder.JSONDecodeError:
-            history = []
-        if not isinstance(history, list):
-            hfd.write("[]")
-            return
-        history.append({
-            "msg": msg,
-            "date": str(date.today())
-        })
-        hfd.seek(0)
-        hfd.write(json.dumps(history, ensure_ascii=False))
-        hfd.truncate()
+def add_message_to_history(username: str, entry: str, msg: str):
+    history = []
+    if db.user_history_entry_exists(username, entry):
+        history = json.loads(db.user_history_entry_get(username, entry))
+    history.append({
+        "who": username,
+        "msg": msg,
+        "date": str(datetime.today())
+    })
+    db.user_history_entry_set(username, entry, json.dumps(history, ensure_ascii=False))
 
-def get_messages_from_history(username: str):
-    with open(f"{config.USERS}/{username}/{config.HISTORY_DIR}/{config.HISTORY_FILE}", "r", encoding='utf-8') as hfd:
-        return json.loads(hfd.read())
+def get_history_entries(username):
+    return db.user_history_entry_ls(username)
+
+def get_messages_from_history(username: str, entry: str):
+    if not db.user_history_entry_exists(username, entry):
+        raise Exception("История не существует")
+    return db.user_history_entry_get(username, entry)
+
+def get_last_message_from_history(username: str, entry: str):
+    if not db.user_history_entry_exists(username, entry):
+        raise Exception("История не существует")
+    try:
+        last = json.loads(db.user_history_entry_get(username, entry))[-1]
+        return last
+    except Exception as e:
+        raise Exception("Файл истории испорчен")
+    
+
+def process_message(message: dto.message_rq):
+    add_message_to_history(
+        username=message.username,
+        entry=message.chat_id,
+        msg=message.msg
+    )
+    return message.msg
