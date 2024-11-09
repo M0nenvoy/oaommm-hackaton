@@ -3,55 +3,67 @@ import Btn from './Btn'
 import List from './List'
 import style from './style.module.css'
 
-function Manual() {
+function Manual({type}) {
   const data = [
     {
       id: 1,
-      name: 'файл'
+      name: 'файл',
+      type: 'all'
     },
     {
       id: 2,
-      name: 'файл 1'
+      name: 'файл 1',
+      type: 'local'
     },
     {
       id: 3,
-      name: 'файл 2'
+      name: 'файл 2',
+      type: 'all'
     },
     {
       id: 1,
-      name: 'файл'
+      name: 'файл',
+      type: 'all'
     },
     {
       id: 2,
-      name: 'файл 1'
+      name: 'файл 1',
+      type: 'all'
     },
     {
       id: 3,
-      name: 'файл 2'
+      name: 'файл 2',
+      type: 'all'
     },
     {
       id: 1,
-      name: 'файл'
+      name: 'файл',
+      type: 'all'
     },
     {
       id: 2,
-      name: 'файл 1'
+      name: 'файл 1',
+      type: 'local'
     },
     {
       id: 3,
-      name: 'файл 2'
+      name: 'файл 2',
+      type: 'all'
     },
     {
       id: 1,
-      name: 'файл'
+      name: 'файл',
+      type: 'local'
     },
     {
       id: 2,
-      name: 'файл 1'
+      name: 'файл 1',
+      type: 'all'
     },
     {
       id: 3,
-      name: 'файл 2'
+      name: 'файл 2',
+      type: 'all'
     },
   ]
   const [open, setOpen] = useState(false)
@@ -63,7 +75,7 @@ function Manual() {
 
   return (
     <>
-      <List data={data} />
+      <List data={data} type={type} />
       <Btn open={open} setOpen={setOpen} handleClick={handleClick} />
     </>
   )

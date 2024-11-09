@@ -9,6 +9,7 @@ function Modal({open, setOpen}) {
   const [selectedFile, setSelectedFile] = useState(null);  // Хранит выбранный файл
   const [fileName, setFileName] = useState("Добавить файл");
   const [files, setFiles] = useState([]); // Начальное значение текста кнопки
+  const [data, setData] = useState([])
 
   function handleClose() {
     setOpen(false)
@@ -29,6 +30,7 @@ function Modal({open, setOpen}) {
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
+    
     if (file) {
       setSelectedFile(file);
       setFileName(file.name);  // Отображаем имя выбранного файла
@@ -36,6 +38,14 @@ function Modal({open, setOpen}) {
 
     const selectedFiles1 = Array.from(event.target.files); // Преобразуем FileList в массив
     setFiles(selectedFiles1);
+
+    const cloneData = []
+    for(let i = 0; i < selectedFiles1.length; i++) {
+      console.log([...data, selectedFiles1[i].name]);
+      cloneData.push(selectedFiles1[i].name)
+    }
+    setData(cloneData)
+
   };
 
   return (
@@ -43,10 +53,12 @@ function Modal({open, setOpen}) {
       <div className={style.modal} onClick={handleModal}>
         <div className={style.header}>
           <div className={style.name}>Загрузка файлов</div>
-          <div className={style.close} onClick={handleClose}>close</div>
+          <div className={style.close} onClick={handleClose}>
+            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg>
+          </div>
         </div>
         <div className={style.body}>
-          <Select name='тип' options={['тип 1', 'тип 1', 'тип 1']} />
+          <Select name='Свои' options={['Общие', 'Свои']} />
 
           <input
             type="file"
@@ -69,8 +81,13 @@ function Modal({open, setOpen}) {
               </svg>
               <span>{fileName}</span>
             </div>
-            <UploadsFile />
           </div>
+          {
+            selectedFile ?
+              <UploadsFile data={data} setData={setData} />
+              :
+              <></>
+          }
 
           <Btn handleClick={handleClick} />
         </div>

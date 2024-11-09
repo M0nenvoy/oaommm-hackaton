@@ -23,14 +23,20 @@
 }
 
 .name {
+  font-size: 18px;
+  color: white;
   margin-right: auto;
 }
 
 .close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
 }
 
 .body {
+  position: relative;
   padding: 10px;
 }
 
@@ -88,12 +94,76 @@
 .uploadListContainer {
   position: absolute;
   width: 300px;
-  right: -300px;
+  right: -310px;
+  top: -44px;
   background: white;
+  border-radius: 11px;
+  background: #5d5c61;
 }
 
 .uploadList {
-  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   position: relative;
-  z-index: 1;
+  padding: 10px;
+  max-height: 227px;
+  overflow: auto;
+}
+
+.uploadList::-webkit-scrollbar {
+  width: 6px;
+  margin-left: 3px;               /* ширина scrollbar */
+}
+.uploadList::-webkit-scrollbar-track {
+  background: #fff;        /* цвет дорожки */
+  border-radius: 12px;
+}
+.uploadList::-webkit-scrollbar-thumb {
+  background-color: #7395ae;    /* цвет плашки */
+  border-radius: 20px;       /* закругления плашки */
+}
+
+.title {
+  font-size: 18px;
+  color: white;
+  margin-top: 10px;
+}
+
+.elem {
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  background: #7395ae;
+  color: white;
+  cursor: pointer;
+  transition: all .2s ease;
+  border-radius: 11px;
+}
+
+.elem:not(:last-child) {
+  margin-bottom: 10px;
+}
+
+.elem:hover {
+  background: #557A95;
+}
+
+.delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: tomato;
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 11px;
+  transition: all .2s ease;
+  user-select: none;
+}
+.delete:hover {
+  background: red;
+}
+
+.nameFile {
+  margin-right: 5px;
 }

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react"
 import style from './style.module.css'
 import Option from "./Option";
 
-function Select({name, options}) {
+function Select({name, options, setTypeSelect}) {
   const [openSelect, setOpenSelect] = useState(false)
   const dropdownRef = useRef(null); // ref для элемента
   const [optionsState, setOptionsState] = useState(options)
@@ -44,7 +44,7 @@ function Select({name, options}) {
           openSelect ?
           <div className={style.container}>
             {optionsState.map((item, index) => (
-              <Option optionText={item} setOptionName={setOptionName} key={index} />
+              <Option setTypeSelect={setTypeSelect} optionText={item} optionName={optionName} setOptionName={setOptionName} key={index} />
             ))}
           </div>
           :

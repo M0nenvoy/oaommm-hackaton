@@ -1,0 +1,41 @@
+.placeAuth {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #222;
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  /* display: none !important; */
+}
+
+.startPage {
+
+}
+
+.btn,
+.btnAuth {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: all .2s ease;
+}
+
+.btn {
+  background: #379683;
+}
+.btn:hover {
+  background: #B1A296;
+}
+
+.btnAuth {
+  background: #7395ae;
+}
+.btnAuth:hover {
+  background: #557A95;
+}

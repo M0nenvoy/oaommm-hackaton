@@ -8,6 +8,19 @@
   margin-bottom: 10px;
 }
 
+.list::-webkit-scrollbar {
+  width: 6px;
+  margin-left: 3px;               /* ширина scrollbar */
+}
+.list::-webkit-scrollbar-track {
+  background: #fff;        /* цвет дорожки */
+  border-radius: 12px;
+}
+.list::-webkit-scrollbar-thumb {
+  background-color: #7395ae;    /* цвет плашки */
+  border-radius: 20px;       /* закругления плашки */
+}
+
 .btn {
   padding: 20px;
   color: white;

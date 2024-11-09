@@ -31,9 +31,27 @@
   background: white;
   color: #222;
   border-radius: 12px;
+  border: 3px solid #7395ae;
+  z-index: 1;
+  overflow: hidden;
 }
 
 .option {
   padding: 10px;
   text-align: center;
+  transition: all .2s ease;
+}
+.optionActive {
+  padding: 10px;
+  text-align: center;
+  transition: all .2s ease;
+  background: #379683;
+  color: white;
+}
+
+.option:hover {
+  background: #B1A296;
+}
+.optionActive {
+  background: #557A95;
 }

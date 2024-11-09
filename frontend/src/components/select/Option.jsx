@@ -1,14 +1,19 @@
 import style from './style.module.css'
 
-function Option({optionText, setOptionName}) {
+function Option({optionText, setOptionName, optionName, setTypeSelect}) {
   console.log(optionText);
 
   function handleOption() {
     setOptionName(optionText)
+    setTypeSelect(optionText)
   }
   
   return (
-    <div className={style.option} onClick={() => handleOption()}>{optionText}</div>
+    <div className={optionName === optionText ?
+      style.optionActive
+      :
+      style.option
+    } onClick={() => handleOption()}>{optionText}</div>
   )
 }
 
