@@ -66,12 +66,32 @@ def user(username: Annotated[str, Depends(get_current_user)]):
 
 # -------- DOCS ---------- #
 @app.post("/user/upload")
-async def upload(files: list[UploadFile], username: Annotated[str, Depends(get_current_user)]):
+async def userupload(files: list[UploadFile], username: Annotated[str, Depends(get_current_user)]):
     try:
-        await api.upload(username, files)
+        await api.upload(username, "local", files)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
+@app.post("/upload")
+async def upload(files: list[UploadFile]):
+    try:
+        await api.upload("", "global", files)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+@app.get("/file")
+async def get_files():
+    try:
+        return api.get_global_files()
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/user/file")
+async def get_files(username: Annotated[str, Depends(get_current_user)]):
+    try:
+        return api.get_user_files(username)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 # -------- HISTORY ------ #
 @app.post("/user/history")
