@@ -79,8 +79,7 @@ headers = {
 
 def add_file_to_db(file_paths, collection, chunk_size, chunk_overlap):
     if file_paths:
-        documents = [load_single_document(path) for path in file_paths]
-        print(documents)
+        documents = [load_single_document(path) for path in file_paths] 
         tmp = []
         for doc in documents:
             if doc != None:

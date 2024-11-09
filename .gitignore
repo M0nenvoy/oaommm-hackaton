@@ -1,0 +1,5 @@
+llm/__pycache__/
+llm/data/
+llm/resources/
+llm/test/
+.venv/
