@@ -1,5 +1,6 @@
 import os
 import logging
+import uuid
 
 from typing import Annotated
 
@@ -78,6 +79,12 @@ async def history(rq: dto.history, username: Annotated[str, Depends(get_current_
 @app.get("/user/history")
 async def historylast(username: Annotated[str, Depends(get_current_user)]):
     return [api.get_last_message_from_history(username=username, entry=x) for x in api.get_history_entries(username)]
+
+@app.post("/user/newchat")
+async def newchat(username: Annotated[str, Depends(get_current_user)]):
+    chatId = uuid.uuid4()
+    api.chat_make(username, str(chatId))
+    return { "id": chatId }
     
 # -------- CHAT ------ #
 @app.websocket("/ws")

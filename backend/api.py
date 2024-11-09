@@ -8,7 +8,7 @@ import dto
 
 logger = logging.getLogger(__name__)
 
-from datetime import datetime
+from datetime import date
 from fastapi import UploadFile
 
 def setup():
@@ -53,9 +53,14 @@ def add_message_to_history(username: str, entry: str, msg: str):
     history.append({
         "who": username,
         "msg": msg,
-        "date": str(datetime.today())
+        "date": str(date.today())
     })
     db.user_history_entry_set(username, entry, json.dumps(history, ensure_ascii=False))
+
+def chat_make(username: str, entry: str):
+    if db.user_history_entry_exists(username, entry):
+        return
+    db.user_history_entry_set(username, entry, '[]')
 
 def get_history_entries(username):
     return db.user_history_entry_ls(username)
