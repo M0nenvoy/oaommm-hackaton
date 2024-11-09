@@ -18,8 +18,18 @@ class login(BaseModel):
     password: str
 
 class history(BaseModel):
-    username: str
+    id: str
 
 class upload(BaseModel):
     token: str
     files: list[UploadFile]
+
+class message_rq(BaseModel):
+    chat_id: str
+    msg: str
+    username: str
+
+class message(BaseModel):
+    who: str
+    msg: str
+    date: str

@@ -6,6 +6,7 @@ from typing import Annotated
 import dto
 import api
 import misc
+import auth
 
 from fastapi import (
     HTTPException, UploadFile, FastAPI,
@@ -14,6 +15,7 @@ from fastapi import (
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 
+# -------- SETUP ---------- #
 app = FastAPI()
 logger = logging.getLogger(__name__)
 
@@ -26,49 +28,62 @@ app.add_middleware(
 )
 
 api.setup()
-
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
-    username, _ = misc.detokenize(token)
-    return username
-
+# -------- MISC ---------- #
 @app.get("/checkhealth")
-def checkhealth(token: Annotated[str, Depends(get_current_user)]):
+def checkhealth():
     return { "status": "ok" }
 
+# -------- AUTH ---------- #
+async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
+    try:
+        return auth.get_username(token)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
+@app.post("/register")
+def register(fd: Annotated[OAuth2PasswordRequestForm, Depends()]):
+    try:
+        api.register(fd.username, fd.password)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return dto.token(access_token=auth.make(fd.username), token_type="bearer")
+
+@app.post("/token")
+def login(fd: Annotated[OAuth2PasswordRequestForm, Depends()]):
+    try:
+        api.credentials_validate(fd.username, fd.password)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return dto.token(access_token=auth.make(fd.username), token_type="bearer")
+
+# -------- USER ---------- #
 @app.get("/user")
 def user(username: Annotated[str, Depends(get_current_user)]):
     return { "username": username }
 
-@app.post("/register")
-def register(rq: dto.register):
-    ok, error = api.register(rq.username, rq.password)
-    if not ok:
-        raise HTTPException(status_code=400, detail=error)
-    return dto.token(token = misc.tokenize(rq.username, rq.password))
-
-@app.post("/token")
-def login(fd: Annotated[OAuth2PasswordRequestForm, Depends()]):
-    ok, error = api.login(fd.username, fd.password)
-    if not ok:
-        raise HTTPException(status_code=400, detail=error)
-    return dto.token(access_token=misc.tokenize(fd.username, fd.password), token_type="bearer")
-
+# -------- DOCS ---------- #
 @app.post("/user/upload")
-async def upload(files: list[UploadFile], token: str):
-    try:
-        username, password = misc.detokenize(token)
-    except Exception:
-        raise HTTPException(status_code=400, detail="Плохой токен")
-    ok, error = await api.upload(username, password, files)
+async def upload(files: list[UploadFile], username: Annotated[str, Depends(get_current_user)]):
+    ok, error = await api.upload(username, files)
     if not ok:
         raise HTTPException(status_code=400, detail=error)
-    
+
+# -------- HISTORY ------ #
+@app.get("/user/history")
+async def history_entries(username: Annotated[str, Depends(get_current_user)]):
+    return api.get_history_entries(username)
+
 @app.post("/user/history")
-async def history(rq: dto.history):
-    return api.get_messages_from_history(rq.username)
+async def history(rq: dto.history, username: Annotated[str, Depends(get_current_user)]):
+    return api.get_messages_from_history(username, rq.id)
+
+@app.post("/user/history/last")
+async def historylast(rq: dto.history, username: Annotated[str, Depends(get_current_user)]):
+    return api.get_last_message_from_history(username=username, entry=rq.id)
     
+# -------- CHAT ------ #
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
@@ -76,12 +91,17 @@ async def websocket_endpoint(websocket: WebSocket):
         data = await websocket.receive_json()
         try:
             assert data["msg"]
-            assert data["username"]
+            assert data["chat_id"]
+            assert data["access_token"]
         except Exception:
-            logger.error("Сообщение должно содержать 'username' и 'msg'")
+            logger.error("Сообщение должно содержать 'chat_id', 'msg' и 'access_token'")
             continue
-        response = api.process_message(data["username"], data["msg"])
-        api.add_message_to_history(data["msg"], data["username"])
+        username = await get_current_user(data["access_token"])
+        response = api.process_message(dto.message_rq(
+            chat_id = data["chat_id"],
+            msg = data["msg"],
+            username = username
+        ))
         await websocket.send_json({
             "msg": response
         })
