@@ -105,3 +105,4 @@ def process_message(message: dto.message_rq):
     response = requests.post("http://localhost:8080/answer", json=data)
     print(response.json())
     return response.json()
+    

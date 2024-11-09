@@ -118,16 +118,24 @@ def add_file_to_db(file_paths, collection, chunk_size, chunk_overlap):
     return None
 
 
-def retrieve(history, collection, k_documents):
-    retrieved_docs = ""
+def retrieve(history, collection, default_collection, k_documents):
+    last_user_message = history[-1]["text"]
+    retrieved_docs = []
+    metadatas = []
+    if default_collection:
+        res = default_collection.query(
+                query_texts=[last_user_message],
+                n_results=k_documents,
+            )
+        retrieved_docs.extend(res['documents'][0])
+        metadatas.extend(res['metadatas'][0])
     if collection:
-        last_user_message = history[-1]["text"]
         res = collection.query(
                 query_texts=[last_user_message],
                 n_results=k_documents,
             )
-        retrieved_docs = res['documents'][0]
-        metadatas = res['metadatas'][0]
+        retrieved_docs.extend(res['documents'][0])
+        metadatas.extend(res['metadatas'][0])
     return retrieved_docs, metadatas
 
 
@@ -233,7 +241,8 @@ def del_files(data=Body()):
 def question_answering(data=Body()):
     global chatbot, k_documents
     collection = client.get_or_create_collection(data['username'],embedding_function=embeddings)
-    retrieved_docs, metadatas = retrieve(data['messages'], collection, k_documents)
+    default_collection = client.get_or_create_collection("default",embedding_function=embeddings)
+    retrieved_docs, metadatas = retrieve(data['messages'], collection, default_collection, k_documents)
     result, metadata = bot(data['messages'], retrieved_docs, top_p, top_k, temp, metadatas)
     chatbot = []
     return {'msg': result,
