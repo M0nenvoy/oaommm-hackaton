@@ -23,21 +23,23 @@ function Chat() {
 
     ws.onmessage = function(event) {
       const message = event.data
-      const newChunk = JSON.parse(message).msg
+      console.log(message)
+      const newChunk = JSON.parse(message).msg.msg
+      console.log(newChunk)
 
       lastIndex.msg += newChunk
 
-      setInterval(() => {
+      // setInterval(() => {
         lastIndex.msg += newChunk
         console.log(lastIndex.msg);
         setForm((prevData) => {
           const updatedData = [...prevData];
 
           updatedData[updatedData.length - 1].msg = lastIndex.msg;
-
+          console.log(updatedData)
           return updatedData;
         })
-      }, 1000)
+      // }, 1000)
 
       // const typing = document.querySelector('.typing')
       // typing.classList.remove('typing-active')

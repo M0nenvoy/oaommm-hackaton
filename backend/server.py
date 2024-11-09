@@ -101,13 +101,15 @@ async def websocket_endpoint(websocket: WebSocket):
             continue
         try:
             username = await get_current_user(data["access_token"])
+            response = api.process_message(dto.message_rq(
+                chat_id = data["chat_id"],
+                msg = data["msg"],
+                username = username
+            ))
+            await websocket.send_json({
+                "msg": response
+            })
         except HTTPException as e:
             logger.error("Ошибка в сокете: " + e.detail)
-        response = api.process_message(dto.message_rq(
-            chat_id = data["chat_id"],
-            msg = data["msg"],
-            username = username
-        ))
-        await websocket.send_json({
-            "msg": response
-        })
+        
+        
