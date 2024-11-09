@@ -4,9 +4,8 @@ import Time from "./Time";
 
 function Item({message, timeNext, index}) {
   const [flagDate, setFlagDate] = useState(true)
-
   useEffect(() => {
-    const date = message[0].date.trim()
+    const date = message.date.trim()
 
     if(timeNext.trim() === date.trim()) {
       setFlagDate(false)
@@ -19,7 +18,7 @@ function Item({message, timeNext, index}) {
 
   function handleItemHistory() {
     console.log('click click click');
-    console.log(message[0].id);
+    console.log(message.id);
 
     
   }
@@ -31,12 +30,12 @@ function Item({message, timeNext, index}) {
       })} */}
       {
         flagDate || !index ?
-          <Time date={message[0].date.trim()}/>
+          <Time date={message.date.trim()}/>
           :
           <></>
       }
       <div className={style.itemHistoryList} onClick={handleItemHistory}>
-        {message[1][message.length].msg}
+        {message.msg}
       </div>
     </div>
   )

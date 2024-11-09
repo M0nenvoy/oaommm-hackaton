@@ -28,10 +28,12 @@ function Send({ws, value, setValue, form, setForm, messagesRef}) {
       who: ''
     }])
 
+    const token = localStorage.getItem('token')
+
     ws.send(JSON.stringify({
       msg: value,
       chat_id: 'dfhjdfhk12',
-      access_token: '6a6edcae-582e-4f5f-a3bc-fec96a6e30f7'
+      access_token: token
     }))
 
     const typing = document.querySelector('.typing')

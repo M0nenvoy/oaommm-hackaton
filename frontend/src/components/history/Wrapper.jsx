@@ -144,36 +144,34 @@ function Wrapper() {
     // ],
   ])
 
-  // useEffect(() => {
+  useEffect(() => {
     async function rr() {
-      const token = localStorage.getItem('token')
+      const token = "8e903923-f59b-463e-9a8a-5b172c6bc922"//localStorage.getItem('token')
 
-      console.log(token);
-      
-  
       const responseChatId = await fetch('http://localhost:8000/user/history', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       })
-      const resultChatId = await responseChatId.json()
-  
-      console.log(resultChatId);
-      setMessagesList(resultChatId)
+      responseChatId.json().then(result => {
+        result = result.filter((msg => msg.date !== undefined))
+        console.log(result)
+        setMessagesList(result)
+      })
     }
-    // rr()
-  // }, [messagesList])
+    rr()
+  }, [])
 
   return (
     <div>
       {
-        // messagesList.map((item, index) => {
-          // if(index !== 0) {
-          //   return <Item message={item} index={index} timeNext={messagesList[index-1][0].date} key={index} />
-          // } else {
-          //   return <Item message={item} index={index} timeNext={messagesList[index][0].date} key={index} />
-          // }
-        // })
+        messagesList.map((item, index) => {
+          if(index !== 0) {
+            return <Item message={item} index={index} timeNext={"2022-10-10"} key={index} />
+          } else {
+            return <Item message={item} index={index} timeNext={"2022-10-10"} key={index} />
+          }
+        })
       }
     </div>
   )
