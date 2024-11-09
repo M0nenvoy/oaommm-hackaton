@@ -146,7 +146,8 @@ function Wrapper() {
 
   useEffect(() => {
     async function rr() {
-      const token = "8e903923-f59b-463e-9a8a-5b172c6bc922"//localStorage.getItem('token')
+      const token = localStorage.getItem('token')
+      console.log("Token is " + token)
 
       const responseChatId = await fetch('http://localhost:8000/user/history', {
         headers: {
