@@ -67,9 +67,11 @@ def user(username: Annotated[str, Depends(get_current_user)]):
 # -------- DOCS ---------- #
 @app.post("/user/upload")
 async def upload(files: list[UploadFile], username: Annotated[str, Depends(get_current_user)]):
-    ok, error = await api.upload(username, files)
-    if not ok:
-        raise HTTPException(status_code=400, detail=error)
+    try:
+        await api.upload(username, files)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
 
 # -------- HISTORY ------ #
 @app.post("/user/history")
