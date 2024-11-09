@@ -5,15 +5,28 @@ function Send({ws, value, setValue, form, setForm, messagesRef}) {
     setValue(event.target.value);
   }
 
-  function handleForm(e) {
+  async function handleForm(e) {
     e.preventDefault()
+
+    const response1 = await fetch('http://localhost:8000/user/history', {
+      method: 'POST',
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({'username': 'Anton'})
+    })
+    const res1 = await response1.json()
+    console.log(res1);
 
     setForm([...form, {
       msg: value,
       who: 'me'
     }])
 
-    ws.send({msg: value, username: 'Anton'})
+    console.log(ws);
+    
+    ws.send(JSON.stringify({msg: value, username: 'Anton'}))
 
     setValue('')
   }

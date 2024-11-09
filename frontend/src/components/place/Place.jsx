@@ -14,7 +14,7 @@ function Place({flag, children}) {
       ref={closeRef}
       className={style.containerPlace}
     >
-      <div className={style.place}>
+      <div className={flag ? style.placeStart : style.placeEnd}>
         {children}
       </div>
     </div>

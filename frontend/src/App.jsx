@@ -4,6 +4,9 @@ import Select from './components/select/Select'
 import Chat from './components/chat/Chat'
 import Place from './components/place/Place'
 import './App.css'
+import Auth from './components/auth/Auth'
+import Wrapper from './components/history/Wrapper'
+import Manual from './components/res/Manual'
 
 function App() {
   const [value, setValue] = useState('')
@@ -33,11 +36,14 @@ function App() {
       <Chat /> */}
       <Place flag={true}>
         История чата
+        <Wrapper />
       </Place>
       <Chat />
       <Place flag={false}>
-        Настройка импортов и экспортов файлов
+        <Select name='Общие' options={['Общие', 'Свои']} />
+        <Manual />
       </Place>
+      {/* <Auth /> */}
     </div>
   )
 }
