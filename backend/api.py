@@ -5,6 +5,7 @@ import logging
 
 import db
 import dto
+import requests
 
 logger = logging.getLogger(__name__)
 
@@ -90,4 +91,17 @@ def process_message(message: dto.message_rq):
         entry=message.chat_id,
         msg=message.msg
     )
-    return message.msg
+    data = {"messages": [
+        {
+            "role": "system",
+            "text": "Ты — умный ассистент."
+        },
+        {
+            "role": "user",
+            "text": message.msg
+        }
+    ],
+"username": "alexsneg"}
+    response = requests.post("http://localhost:8080/answer", json=data)
+    print(response.json())
+    return response.json()
