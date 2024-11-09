@@ -75,11 +75,11 @@ async def upload(files: list[UploadFile], username: Annotated[str, Depends(get_c
 async def history_entries(username: Annotated[str, Depends(get_current_user)]):
     return api.get_history_entries(username)
 
-@app.post("/user/history")
-async def history(rq: dto.history, username: Annotated[str, Depends(get_current_user)]):
+@app.get("/user/history")
+async def history(username: Annotated[str, Depends(get_current_user)]):
     return [api.get_last_message_from_history(username=username, entry=x) for x in api.get_history_entries(username)]
     
-    
+
 # -------- CHAT ------ #
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
