@@ -5,6 +5,7 @@ import logging
 
 import db
 import dto
+import requests
 
 logger = logging.getLogger(__name__)
 
@@ -26,18 +27,24 @@ def credentials_validate(username: str, password: str) -> bool:
     if db.user_password_get(username) != password:
         raise Exception("Неверный пароль")
 
-async def upload(username: str, files: list[UploadFile]):
+async def upload(username: str, password: str, files: list[UploadFile]):
     userpath = "{users}/{username}".format(users=config.USERS_DIR, username=username)
     if not os.path.isdir(userpath):
-        raise Exception("Пользователь не существует")  
+        return (False, "Плохой токен")  
+    with open("{userpath}/{password}".format(userpath=userpath, password=config.PASSWORD_FILE), "r") as pfd:
+        if not password == pfd.read():
+            return (False, "Плохой токен")
     for file in files:
         try:
-            db.user_save_doc(username, file)
+            content = file.file.read()
+            with open("{userpath}/{filename}".format(userpath=userpath, filename=file.filename), "wb") as f:
+                f.write(content)
         except Exception as e:
             logger.warning(e)
-            raise Exception("Не удалось обработать 1 или более файлов: " + str(e))
+            return (False, "Не удалось обработать 1 или более файлов")
         finally:
             await file.close()
+    return (True, None)
 
 
 def add_message_to_history(username: str, entry: str, msg: str):
@@ -84,4 +91,17 @@ def process_message(message: dto.message_rq):
         entry=message.chat_id,
         msg=message.msg
     )
-    return message.msg
+    data = {"messages": [
+        {
+            "role": "system",
+            "text": "Ты — умный ассистент."
+        },
+        {
+            "role": "user",
+            "text": message.msg
+        }
+    ],
+"username": "alexsneg"}
+    response = requests.post("http://localhost:8080/answer", json=data)
+    print(response.json())
+    return response.json()

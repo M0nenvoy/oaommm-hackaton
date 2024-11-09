@@ -1,3 +1,4 @@
+
 import './App.css'
 import Auth from './components/auth/Auth'
 import { Route, Router, Routes } from 'react-router-dom'
@@ -17,3 +18,4 @@ function App() {
 }
 
 export default App
+
