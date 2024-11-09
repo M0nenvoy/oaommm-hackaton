@@ -99,7 +99,10 @@ async def websocket_endpoint(websocket: WebSocket):
         except Exception:
             logger.error("Сообщение должно содержать 'chat_id', 'msg' и 'access_token'")
             continue
-        username = await get_current_user(data["access_token"])
+        try:
+            username = await get_current_user(data["access_token"])
+        except HTTPException as e:
+            logger.error("Ошибка в сокете: " + e.detail)
         response = api.process_message(dto.message_rq(
             chat_id = data["chat_id"],
             msg = data["msg"],
