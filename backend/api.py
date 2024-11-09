@@ -3,6 +3,7 @@ import json
 import config
 import logging
 import uuid
+import requests
 
 import db
 import filemeta
@@ -63,8 +64,8 @@ def add_message_to_history(username: str, entry: str, msg: str):
     if db.user_history_entry_exists(username, entry):
         history = json.loads(db.user_history_entry_get(username, entry))
     history.append({
-        "who": username,
-        "msg": msg,
+        "role": "user",
+        "text": msg,
         "date": str(date.today())
     })
     db.user_history_entry_set(username, entry, json.dumps(history, ensure_ascii=False))
@@ -95,13 +96,14 @@ def get_last_message_from_history(username: str, entry: str):
     except Exception as e:
         raise Exception("Файл истории испорчен")
     
-    
+
 def process_message(message: dto.message_rq):
     add_message_to_history(
         username=message.username,
         entry=message.chat_id,
         msg=message.msg
     )
+    return "ok"
     data = {"messages": [
         {
             "role": "system",
