@@ -74,7 +74,10 @@ def get_last_message_from_history(username: str, entry: str):
     if not db.user_history_entry_exists(username, entry):
         raise Exception("История не существует")
     try:
-        last = json.loads(db.user_history_entry_get(username, entry))[-1]
+        messages = json.loads(db.user_history_entry_get(username, entry))
+        if len(messages) == 0:
+            return { 'id': entry }
+        last = messages[-1]
         last['id'] = entry
         return last
     except Exception as e:
