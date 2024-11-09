@@ -1,12 +1,13 @@
-
 import './App.css'
 import Auth from './components/auth/Auth'
 import { Route, Router, Routes } from 'react-router-dom'
 import Main from './components/main/Main'
-import Wrapper from './components/history/Wrapper'
-import Chat from './components/chat/Chat'
 
 function App() {
+  window.addEventListener('beforeunload', () => {
+    localStorage.removeItem('idChat'); // Удаление записи укажет, что уход не связан с перезагрузкой
+  });
+
   return (
     <div className='container'>
       <Routes>
@@ -18,4 +19,3 @@ function App() {
 }
 
 export default App
-

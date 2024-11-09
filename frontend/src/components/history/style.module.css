@@ -34,3 +34,20 @@
 .itemHistoryList:hover {
   background: #B1A296;
 }
+
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  border-radius: 11px;
+  background: #7395ae;
+  transition: all .2s ease;
+  margin-bottom: 10px;
+  color: white;
+  cursor: pointer;
+  margin: 10px;
+}
+.btn:hover {
+  background: #557A95;
+}

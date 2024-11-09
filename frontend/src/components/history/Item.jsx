@@ -4,6 +4,7 @@ import Time from "./Time";
 
 function Item({message, timeNext, index}) {
   const [flagDate, setFlagDate] = useState(true)
+
   useEffect(() => {
     const date = message.date.trim()
 
@@ -19,8 +20,6 @@ function Item({message, timeNext, index}) {
   function handleItemHistory() {
     console.log('click click click');
     console.log(message.id);
-
-    
   }
   
   return (

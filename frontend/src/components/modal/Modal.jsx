@@ -4,12 +4,13 @@ import Btn from '../res/Btn'
 import style from './style.module.css'
 import UploadsFile from './UploadsFile';
 
-function Modal({open, setOpen}) {
+function Modal({open, setOpen, nameSelect}) {
   const fileInputRef = useRef(null);
   const [selectedFile, setSelectedFile] = useState(null);  // Хранит выбранный файл
   const [fileName, setFileName] = useState("Добавить файл");
   const [files, setFiles] = useState([]); // Начальное значение текста кнопки
   const [data, setData] = useState([])
+  const [typeSelect, setTypeSelect] = useState('')
 
   function handleClose() {
     setOpen(false)
@@ -18,6 +19,7 @@ function Modal({open, setOpen}) {
   function handleClick() {
     console.log('clic click');
     setOpen(false)
+    handleFileUpload()
   }
 
   function handleModal(e) {
@@ -48,6 +50,56 @@ function Modal({open, setOpen}) {
 
   };
 
+  const handleFileUpload = async () => {
+    // const loader = document.querySelector('.loader')
+    // loader.classList.remove('display-none')
+
+    const formData = new FormData();
+
+    console.log(files);
+    
+    for (let i = 0; i < files.length; ++i) {
+      formData.append('files', files[i]);
+    }
+
+    const token = localStorage.getItem('token')
+    let path = ''
+
+    if(typeSelect === 'local') {
+      path = '/user/upload'
+    } else {
+      path = '/upload'
+    }
+
+    try {
+      const response = await fetch(`http://localhost:8000${path}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        method: 'POST',
+        body: formData,
+      });
+      const result = await response.json()
+      console.log(result);
+
+      if (!response.ok) {
+        throw new Error('Ошибка при загрузке файлов');
+      }
+
+      setTimeout(() => {
+        // const r = document.querySelector('._itemNav_ktj48_11')
+        // r.click()
+
+        setFileName('Добавить файл')
+
+        // loader.classList.add('display-none')
+      }, 100)
+    } catch (error) {
+      alert(error);
+      // loader.classList.add('display-none')
+    }
+  };
+
   return (
     <div className={style.modalWrapper} onClick={handleClose}>
       <div className={style.modal} onClick={handleModal}>
@@ -58,7 +110,7 @@ function Modal({open, setOpen}) {
           </div>
         </div>
         <div className={style.body}>
-          <Select name='Свои' options={['Общие', 'Свои']} />
+          <Select setTypeSelect={setTypeSelect} name={nameSelect} options={['all', 'local']} />
 
           <input
             type="file"
@@ -89,7 +141,7 @@ function Modal({open, setOpen}) {
               <></>
           }
 
-          <Btn handleClick={handleClick} />
+          <Btn handleClick={handleClick}  />
         </div>
       </div>
     </div>
