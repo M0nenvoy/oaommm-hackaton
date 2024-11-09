@@ -76,7 +76,7 @@ async def history(rq: dto.history, username: Annotated[str, Depends(get_current_
     return api.get_messages_from_history(username, rq.id)
 
 @app.get("/user/history")
-async def historylast(rq: dto.history, username: Annotated[str, Depends(get_current_user)]):
+async def historylast(username: Annotated[str, Depends(get_current_user)]):
     return [api.get_last_message_from_history(username=username, entry=x) for x in api.get_history_entries(username)]
     
 # -------- CHAT ------ #
