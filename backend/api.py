@@ -103,18 +103,16 @@ def process_message(message: dto.message_rq):
         entry=message.chat_id,
         msg=message.msg
     )
-    return "ok"
-    data = {"messages": [
-        {
-            "role": "system",
-            "text": "Ты — умный ассистент."
-        },
-        {
-            "role": "user",
-            "text": message.msg
-        }
-    ],
-"username": "alexsneg"}
-    response = requests.post("http://localhost:8080/answer", json=data)
-    print(response.json())
-    return response.json()
+
+    messages = json.loads(get_messages_from_history(message.username, message.chat_id))
+    messages.insert(0, { "role": "system", "text": config.AI_FIRST_MESSAGE })
+    data = {
+        "messages": messages,
+        "username": message.username
+    }
+    try:
+        response = requests.post(config.AI_ANSWER, json=data)
+        return response
+    except Exception as e:
+        logger.error("Не удалось получить ответ ИИ: " + str(e))
+        return { "msg" : str(e) }
