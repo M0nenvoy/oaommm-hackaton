@@ -38,7 +38,7 @@ async def upload(username: str, type: str, files: list[UploadFile]):
         raise Exception("Пользователь не существует")  
     for file in files:
         try:
-            id = str(uuid.uuid4())
+            id = str(file.filename)
             ids.append(id)
             db.user_save_doc(username, file, name=id)
             filemeta.add(filemeta.Filemeta(id=id, name=file.filename, owner=username, type=type))
