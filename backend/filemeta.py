@@ -32,11 +32,11 @@ class Filemeta:
         }
 
 def read():
-    with open(f"{config.META_DIR}/{config.META_FILE}", 'r') as f:
+    with open(f"{config.META_DIR}/{config.META_FILE}", 'r', encoding='utf-8') as f:
         return f.read()
 
 def write(data: str):
-    with open(f"{config.META_DIR}/{config.META_FILE}", 'w+') as f:
+    with open(f"{config.META_DIR}/{config.META_FILE}", 'w+', encoding='utf-8') as f:
         f.write(data)
     
 def get_files() -> list[Filemeta]:

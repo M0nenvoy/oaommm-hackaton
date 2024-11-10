@@ -8,6 +8,7 @@ import requests
 import db
 import filemeta
 import dto
+import integration
 
 logger = logging.getLogger(__name__)
 
@@ -32,11 +33,13 @@ def credentials_validate(username: str, password: str) -> bool:
 
 async def upload(username: str, type: str, files: list[UploadFile]):
     userpath = "{users}/{username}".format(users=config.USERS_DIR, username=username)
+    ids = []
     if not os.path.isdir(userpath):
         raise Exception("Пользователь не существует")  
     for file in files:
         try:
             id = str(uuid.uuid4())
+            ids.append(id)
             db.user_save_doc(username, file, name=id)
             filemeta.add(filemeta.Filemeta(id=id, name=file.filename, owner=username, type=type))
         except Exception as e:
@@ -44,6 +47,10 @@ async def upload(username: str, type: str, files: list[UploadFile]):
             raise Exception("Не удалось обработать 1 или более файлов: " + str(e))
         finally:
             await file.close()
+    try:
+        integration.upload(username, [os.path.abspath(f"{config.DOCS_DIR}/{x}") for x in ids])
+    except Exception as e:
+        raise Exception("Не удалось получить ответ от ии: " + str(e))
 
 
 def get_global_files():
@@ -59,12 +66,12 @@ def get_user_files(username: str):
     return files
 
 
-def add_message_to_history(username: str, entry: str, msg: str):
+def add_message_to_history(username: str, entry: str, msg: str, role: str = "user"):
     history = []
     if db.user_history_entry_exists(username, entry):
         history = json.loads(db.user_history_entry_get(username, entry))
     history.append({
-        "role": "user",
+        "role": role,
         "text": msg,
         "date": str(date.today())
     })
@@ -109,15 +116,15 @@ def process_message(message: dto.message_rq):
         msg=message.msg
     )
 
-    messages = json.loads(get_messages_from_history(message.username, message.chat_id))
-    messages.insert(0, { "role": "system", "text": config.AI_FIRST_MESSAGE })
-    data = {
-        "messages": messages,
-        "username": message.username
-    }
+    history = json.loads(get_messages_from_history(message.username, message.chat_id))
     try:
-        response = requests.post(config.AI_ANSWER, json=data)
+        response = integration.process_message(message.username, history)
+        add_message_to_history(
+            username=message.username,
+            entry=message.chat_id,
+            msg=response.msg,
+            role="assistant"
+        )
         return response
     except Exception as e:
-        logger.error("Не удалось получить ответ ИИ: " + str(e))
-        return { "msg" : str(e) }
+        raise Exception("Не удалось получить ответ от ии" + str(e))

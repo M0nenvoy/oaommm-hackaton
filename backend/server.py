@@ -136,7 +136,7 @@ async def websocket_endpoint(websocket: WebSocket):
         try:
             username = await get_current_user(data["access_token"])
             response = api.process_message(dto.message_rq(
-                chat_id = data["chat_id"],
+                chat_id = str(data["chat_id"]),
                 msg = data["msg"],
                 username = username
             ))
