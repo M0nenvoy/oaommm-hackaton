@@ -25,6 +25,8 @@ from fastapi import FastAPI, Body
 
 from fastapi.middleware.cors import CORSMiddleware
 
+import re
+
 
 import requests
 
@@ -153,9 +155,9 @@ def load_single_document(file_path: str) -> Document:
 
 
 def process_text(text):
-    lines = text.split("\n")
-    lines = [line for line in lines if len(line.strip()) > 2]
-    text = "\n".join(lines).strip()
+    text = text.replace(' \n', '').replace('\n\n', '\n').replace('\n\n\n', '\n').strip()
+    text = re.sub(r"(?<=\n)\d{1,2}", "", text)
+    text = re.sub(r"\b(?:the|this)\s*slide\s*\w+\b", "", text, flags=re.IGNORECASE)
     if len(text) < 10:
         return None
     return text
