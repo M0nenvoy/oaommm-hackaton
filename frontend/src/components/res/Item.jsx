@@ -27,8 +27,6 @@ function Item({item, type}) {
     URL.revokeObjectURL(url);
   }
 
-  console.log('type', type, 'item.type', item.type);
-  
   return ( 
       <>
         {

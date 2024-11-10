@@ -120,6 +120,9 @@ input::placeholder {
 
 .icon {
   align-self: flex-end;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .messagesContainer {
@@ -165,4 +168,25 @@ input::placeholder {
 
 .exit:hover {
   background: #557A95;
+}
+
+.wrapperMetadata {
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  padding: 5px;
+  border-radius: 11px;
+  background: white;
+  color: #222;
+  cursor: pointer;
+  transition: all .2s ease;
+}
+
+.link:hover {
+  background: #5d5c61;
+  color: white;
 }

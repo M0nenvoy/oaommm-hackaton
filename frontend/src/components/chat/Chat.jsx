@@ -25,22 +25,29 @@ function Chat({form, setForm, setMessagesList}) {
 
     ws.onmessage = function(event) {
       const message = event.data
-      const newChunk = JSON.parse(message).msg.msg
+      const newChunk = JSON.parse(message).msg
 
-      lastIndex.msg += newChunk
+      lastIndex.msg += newChunk.msg
 
-      lastIndex.msg += newChunk
+      const metadata = newChunk.metadata
+      const page = metadata.page
+      const filePath = metadata.file_path
+
       console.log(lastIndex.msg);
       setForm((prevData) => {
         const updatedData = [...prevData];
 
         updatedData[updatedData.length - 1].msg = lastIndex.msg;
+        updatedData[updatedData.length - 1].metadata.page = lastIndex.metadata.page;
+        updatedData[updatedData.length - 1].metadata.file_path = lastIndex.metadata.file_path;
+
+        console.log(updatedData[updatedData.length - 1]);
 
         return updatedData;
       })
 
-      // const typing = document.querySelector('.typing')
-      // typing.classList.remove('typing-active')
+      const typing = document.querySelector('.typing')
+      typing.classList.remove('typing-active')
     };
 
     // ws.onclose = function() {
