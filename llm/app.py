@@ -20,29 +20,13 @@ from chromadb.config import Settings
 from chromadb import PersistentClient
 from chromadb.utils import embedding_functions
 
-
 from fastapi import FastAPI, Body
-
 from fastapi.middleware.cors import CORSMiddleware
 
 import re
-
-
 import requests
 
-
-SYSTEM_PROMPT = "Ты — Сайга, русскоязычный автоматический ассистент. Ты разговариваешь с людьми и помогаешь им."
-SYSTEM_TOKEN = 1788
-USER_TOKEN = 1404
-BOT_TOKEN = 9225
-LINEBREAK_TOKEN = 13
-
-ROLE_TOKENS = {
-    "user": USER_TOKEN,
-    "bot": BOT_TOKEN,
-    "system": SYSTEM_TOKEN
-}
-
+# Сопоставление типов файлов с загрузчиками для обработки
 LOADER_MAPPING = {
     ".csv": (CSVLoader, {}),
     ".doc": (UnstructuredWordDocumentLoader, {}),
@@ -57,6 +41,8 @@ LOADER_MAPPING = {
     ".pptx": (UnstructuredPowerPointLoader, {}),
     ".txt": (TextLoader, {"encoding": "utf8"}),
 }
+
+# Константы для обработки текста и поиска
 chunk_size = 600
 chunk_overlap = 30
 k_documents = 7
@@ -65,23 +51,34 @@ top_k = 30
 temp = 0.1
 chatbot = []
 
+# Инициализация клиента ChromaDB для работы с базой данных
 client = PersistentClient(path="test", settings=Settings(allow_reset=True))
-# client.reset()
+
+# Загрузка модели эмбеддингов для текстов
 embedder_name = "sentence-transformers/paraphrase-multilingual-mpnet-base-v2"
 snapshot_download(repo_id=embedder_name, local_dir="data/paraphrase-multilingual-mpnet-base-v2", cache_dir="data/cache")
 embeddings = embedding_functions.SentenceTransformerEmbeddingFunction(model_name="data/paraphrase-multilingual-mpnet-base-v2")
-url = 'https://llm.api.cloud.yandex.net/foundationModels/v1/completion'
 
-# Заголовки
+# URL API для генерации текста и заголовки авторизации
+url = 'https://llm.api.cloud.yandex.net/foundationModels/v1/completion'
 headers = {
-    'Authorization': 'Bearer t1.9euelZqZkIyOz8ePncnGkZeJmcydnO3rnpWamc6MkZjHl8zMx5mbj8iQxpLl8_d4Nj9G-e8raUN3_N3z9zhlPEb57ytpQ3f8zef1656Vmo6NjpWJnZHIlczNjc_Pz8-P7_zF656Vmo6NjpWJnZHIlczNjc_Pz8-P.FOvdP319xhW4p7FwDtqZtXKhkOdMBrYtU4utTdVrJS90Uwl7hJJf7EF2lNsP8ADrFMDRFhMGPVCtoQ2wkfM8BQ',
+    'Authorization': 'Bearer ...',  # Укажите токен авторизации
     'Content-Type': 'application/json'
 }
 
 
 def add_file_to_db(file_paths, collection, chunk_size, chunk_overlap):
+    """
+    Загружает файлы в базу данных, разбивая на блоки текста и добавляя в коллекцию.
+    
+    :param file_paths: список путей к файлам
+    :param collection: коллекция документов в базе данных
+    :param chunk_size: размер блока текста
+    :param chunk_overlap: количество перекрытия текста между блоками
+    """
     if file_paths:
-        documents = [load_single_document(path) for path in file_paths] 
+        # Загружает каждый файл, обрабатывая по типу и сохраняет результат
+        documents = [load_single_document(path) for path in file_paths]
         tmp = []
         for doc in documents:
             if doc != None:
@@ -90,8 +87,11 @@ def add_file_to_db(file_paths, collection, chunk_size, chunk_overlap):
                 else:
                     tmp.append(doc)
         documents = tmp
+
+        # Разделение текста на части
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
         documents = text_splitter.split_documents(documents)
+        
         fixed_documents = []
         metadatas = []
         try:
@@ -99,31 +99,43 @@ def add_file_to_db(file_paths, collection, chunk_size, chunk_overlap):
         except Exception:
             last_id = -1
         ids = []
+        
+        # Обработка и добавление каждого документа в коллекцию
         for i in range(len(documents)):   
             documents[i].page_content = process_text(documents[i].page_content)
             if not documents[i].page_content:
                 continue
             
             fixed_documents.append(documents[i].page_content)
-
             metadatas.append({'file_path': documents[i].metadata['source']})
             if 'page' in documents[i].metadata:
                 metadatas[i]['page'] = documents[i].metadata['page'] + 1
 
             ids.append(f"id{last_id + 1 + i}")
         collection.add(
-    documents=fixed_documents,
-    metadatas=metadatas,
-    ids=ids
-)
+            documents=fixed_documents,
+            metadatas=metadatas,
+            ids=ids
+        )
         return collection
     return None
 
 
 def retrieve(history, collection, default_collection, k_documents):
+    """
+    Извлекает релевантные документы для последнего сообщения пользователя.
+
+    :param history: список сообщений
+    :param collection: коллекция с документами пользователя
+    :param default_collection: коллекция по умолчанию
+    :param k_documents: количество релевантных документов для извлечения
+    :return: список релевантных документов и их метаданных
+    """
     last_user_message = history[-1]["text"]
     retrieved_docs = []
     metadatas = []
+    
+    # Запрос в коллекцию по умолчанию
     if default_collection:
         res = default_collection.query(
                 query_texts=[last_user_message],
@@ -131,6 +143,8 @@ def retrieve(history, collection, default_collection, k_documents):
             )
         retrieved_docs.extend(res['documents'][0])
         metadatas.extend(res['metadatas'][0])
+    
+    # Запрос в пользовательскую коллекцию
     if collection:
         res = collection.query(
                 query_texts=[last_user_message],
@@ -142,6 +156,12 @@ def retrieve(history, collection, default_collection, k_documents):
 
 
 def load_single_document(file_path: str) -> Document:
+    """
+    Загружает документ на основе его расширения.
+    
+    :param file_path: путь к файлу
+    :return: объект документа или None в случае ошибки
+    """
     try:
         ext = "." + file_path.rsplit(".", 1)[-1]
         assert ext in LOADER_MAPPING
@@ -155,13 +175,18 @@ def load_single_document(file_path: str) -> Document:
 
 
 def process_text(text):
+    """
+    Очищает текст от лишних символов и форматирования.
+    
+    :param text: текст для обработки
+    :return: обработанный текст или None, если текст слишком короткий
+    """
     text = text.replace(' \n', '').replace('\n\n', '\n').replace('\n\n\n', '\n').strip()
     text = re.sub(r"(?<=\n)\d{1,2}", "", text)
     text = re.sub(r"\b(?:the|this)\s*slide\s*\w+\b", "", text, flags=re.IGNORECASE)
     if len(text) < 10:
         return None
     return text
-
 
 
 def bot(
@@ -172,6 +197,17 @@ def bot(
         temp, 
         metadatas
 ):
+    """
+    Генерирует ответ на основе последних сообщений и релевантных документов.
+    
+    :param history: список сообщений
+    :param retrieved_docs: релевантные документы для ответа
+    :param top_p: параметр для фильтрации токенов
+    :param top_k: ограничение на количество рассматриваемых токенов
+    :param temp: температура генерации текста
+    :param metadatas: метаданные документов
+    :return: ответ на вопрос и метаданные
+    """
     if not history:
         return
 
@@ -179,13 +215,11 @@ def bot(
     if retrieved_docs:
         
         rank_result = reranker_model.rank(last_user_message, retrieved_docs)
-
         relevant_doc = retrieved_docs[rank_result[0]["corpus_id"]]
 
         last_user_message = f"Используя контекст ниже ответь на запрос.\n\nКонтекст:{relevant_doc}\n\nЗапрос:{last_user_message}\n\nОтвет:"
 
     history[-1]["text"] = last_user_message
-    print(history)
     data = {
         "modelUri": "gpt://b1gjp5vama10h4due384/yandexgpt/latest",
         "completionOptions": {
@@ -198,20 +232,16 @@ def bot(
         "messages": history
     }
     response = requests.post(url, headers=headers, json=data)
-    print(retrieved_docs[rank_result[0]["corpus_id"]])
-    print(metadatas[rank_result[0]["corpus_id"]])
     file_answer = metadatas[rank_result[0]["corpus_id"]]['file_path']
-    print(response.json())
     return response.json()['result']['alternatives'][0]['message']['text'], metadatas[rank_result[0]["corpus_id"]]
 
 
+# Инициализация модели для ранжирования документов
 reranker_model = CrossEncoder('DiTy/cross-encoder-russian-msmarco', max_length=512, device='cuda')
 
-
+# Инициализация приложения FastAPI и настройка CORS
 app = FastAPI()
-
 origins = ["*"]
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -223,6 +253,12 @@ app.add_middleware(
 
 @app.post("/uploadfiles")
 def create_upload_files(data=Body()):
+    """
+    API-метод для загрузки файлов в коллекцию пользователя.
+    
+    :param data: данные с именем пользователя и файлами для загрузки
+    :return: статус операции
+    """
     collection = client.get_or_create_collection(data['username'],embedding_function=embeddings)
     collection = add_file_to_db(data["msg"], collection, chunk_size, chunk_overlap)
     return 'Файлы добавлены'
@@ -230,8 +266,13 @@ def create_upload_files(data=Body()):
 
 @app.delete("/del_files")
 def del_files(data=Body()):
+    """
+    API-метод для удаления файлов из коллекции пользователя.
+    
+    :param data: данные с именем пользователя и списком файлов для удаления
+    :return: статус операции
+    """
     collection = client.get_or_create_collection(data['username'],embedding_function=embeddings)
-    chatbot = []
     for doc in data['msg']:
         collection.delete(
             ids=collection.get()["ids"],
@@ -242,12 +283,15 @@ def del_files(data=Body()):
 
 @app.post("/answer")
 def question_answering(data=Body()):
-    global chatbot, k_documents
+    """
+    API-метод для генерации ответа на вопрос пользователя на основе коллекции документов.
+    
+    :param data: данные с именем пользователя и сообщениями для анализа
+    :return: ответ на вопрос и метаданные
+    """
+    global k_documents
     collection = client.get_or_create_collection(data['username'],embedding_function=embeddings)
     default_collection = client.get_or_create_collection("default",embedding_function=embeddings)
     retrieved_docs, metadatas = retrieve(data['messages'], collection, default_collection, k_documents)
     result, metadata = bot(data['messages'], retrieved_docs, top_p, top_k, temp, metadatas)
-    chatbot = []
-    return {'msg': result,
-            'metadata': metadata}
-
+    return {'msg': result, 'metadata': metadata}
