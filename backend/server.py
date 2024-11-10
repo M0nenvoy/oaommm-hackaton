@@ -15,6 +15,7 @@ from fastapi import (
 )
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 
 # -------- SETUP ---------- #
 app = FastAPI()
@@ -92,6 +93,17 @@ async def get_files(username: Annotated[str, Depends(get_current_user)]):
         return api.get_user_files(username)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+    
+@app.get("/file/download")
+async def download(id: str):
+    name, path = api.download(id)
+    if not name or not path:
+        raise HTTPException(status_code=400, detail=str("Файл с таким id не существует"))
+    return FileResponse(
+        path,
+        filename=name,
+        media_type="application/octet-stream"
+    )
 
 # -------- HISTORY ------ #
 @app.post("/user/history")

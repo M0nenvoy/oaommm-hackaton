@@ -1,6 +1,7 @@
 import os
 
 import config
+import filemeta
 
 from fastapi import UploadFile
 
@@ -85,3 +86,10 @@ def user_save_doc(username: str, file: UploadFile, name: str):
     content = file.file.read()
     with open(f"{config.DOCS_DIR}/{name}", "wb") as f:
         f.write(content)
+
+def file_name_by_id(id: str):
+    files = filemeta.get_files()
+    files = list(filter(lambda x: x['id'] == id, files))
+    if len(files) == 0:
+        return None
+    return files[0]['name']

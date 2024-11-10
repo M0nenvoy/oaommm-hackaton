@@ -96,6 +96,11 @@ def get_last_message_from_history(username: str, entry: str):
     except Exception as e:
         raise Exception("Файл истории испорчен")
     
+def download(id: str):
+    name = db.file_name_by_id(id)
+    if not name:
+        return (None, None)
+    return (name, os.path.join(config.DOCS_DIR, id))
 
 def process_message(message: dto.message_rq):
     add_message_to_history(
