@@ -26,6 +26,11 @@ from fastapi.middleware.cors import CORSMiddleware
 import re
 import requests
 
+from utils.SimilarSentenceSplitter import SimilarSentenceSplitter
+from utils.SpacySentenceSplitter import SpacySentenceSplitter
+from utils.SentenceSimilarity import SentenceTransformersSimilarity
+from utils.DocumentSplitter import DocumentSplitter
+
 # Сопоставление типов файлов с загрузчиками для обработки
 LOADER_MAPPING = {
     ".csv": (CSVLoader, {}),
@@ -41,6 +46,18 @@ LOADER_MAPPING = {
     ".pptx": (UnstructuredPowerPointLoader, {}),
     ".txt": (TextLoader, {"encoding": "utf8"}),
 }
+
+# Инициализируем SentenceTransformersSimilarity
+similarity_model = SentenceTransformersSimilarity(similarity_threshold=0.3)
+
+# Инициализируем SpacySentenceSplitter
+sentence_splitter = SpacySentenceSplitter(spacy_model="ru_core_news_sm")
+
+# Создаем SimilarSentenceSplitter с SentenceTransformersSimilarity и SpacySentenceSplitter
+similar_sentence_splitter = SimilarSentenceSplitter(similarity_model=similarity_model, sentence_splitter=sentence_splitter)
+
+# Инициализируем DocumentSplitter с использованием SimilarSentenceSplitter
+document_splitter = DocumentSplitter(splitter=similar_sentence_splitter)
 
 # Константы для обработки текста и поиска
 chunk_size = 600
@@ -69,7 +86,6 @@ headers = {
     'Content-Type': 'application/json'
 }
 
-
 def add_file_to_db(file_paths, collection, chunk_size, chunk_overlap):
     """
     Загружает файлы в базу данных, разбивая на блоки текста и добавляя в коллекцию.
@@ -80,7 +96,6 @@ def add_file_to_db(file_paths, collection, chunk_size, chunk_overlap):
     :param chunk_overlap: количество перекрытия текста между блоками
     """
     if file_paths:
-        # Загружает каждый файл, обрабатывая по типу и сохраняет результат
         documents = [load_single_document(path) for path in file_paths]
         tmp = []
         for doc in documents:
@@ -90,11 +105,7 @@ def add_file_to_db(file_paths, collection, chunk_size, chunk_overlap):
                 else:
                     tmp.append(doc)
         documents = tmp
-
-        # Разделение текста на части
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
-        documents = text_splitter.split_documents(documents)
-        
+        documents = document_splitter.split_documents(documents, group_max_sentences=3)
         fixed_documents = []
         metadatas = []
         try:
@@ -102,24 +113,23 @@ def add_file_to_db(file_paths, collection, chunk_size, chunk_overlap):
         except Exception:
             last_id = -1
         ids = []
-        
-        # Обработка и добавление каждого документа в коллекцию
+        counter_error = 0
         for i in range(len(documents)):   
             documents[i].page_content = process_text(documents[i].page_content)
             if not documents[i].page_content:
+                counter_error += 1
                 continue
-            
+            current_index = i - counter_error
             fixed_documents.append(documents[i].page_content)
             metadatas.append({'file_path': documents[i].metadata['source']})
-            if 'page' in documents[i].metadata:
-                metadatas[i]['page'] = documents[i].metadata['page'] + 1
-
-            ids.append(f"id{last_id + 1 + i}")
+            if 'pages' in documents[i].metadata:
+                metadatas[current_index]['pages'] = ", ".join([str(page + 1) for page in documents[i].metadata['pages']])
+            ids.append(f"id{last_id + 1 + current_index}")
         collection.add(
-            documents=fixed_documents,
-            metadatas=metadatas,
-            ids=ids
-        )
+    documents=fixed_documents,
+    metadatas=metadatas,
+    ids=ids
+)
         return collection
     return None
 
@@ -137,8 +147,6 @@ def retrieve(history, collection, default_collection, k_documents):
     last_user_message = history[-1]["text"]
     retrieved_docs = []
     metadatas = []
-    
-    # Запрос в коллекцию по умолчанию
     if default_collection:
         res = default_collection.query(
                 query_texts=[last_user_message],
@@ -146,8 +154,6 @@ def retrieve(history, collection, default_collection, k_documents):
             )
         retrieved_docs.extend(res['documents'][0])
         metadatas.extend(res['metadatas'][0])
-    
-    # Запрос в пользовательскую коллекцию
     if collection:
         res = collection.query(
                 query_texts=[last_user_message],
