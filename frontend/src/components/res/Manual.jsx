@@ -8,44 +8,53 @@ function Manual({type, typeSelect}) {
   const [dataLocal, setDataLocal] = useState([])
 
   useEffect(() => {
-    async function getFiles() {
+    function getFiles() {
       const token = localStorage.getItem('token')
 
-      const responseAll = await fetch('http://localhost:8000/file', {
+      fetch('http://localhost:8000/file', {
         headers: {
           'Authorization': `Bearer ${token}`
         },
       })
-      const resultAll = await responseAll.json()
-
-      console.log('resultAll', resultAll);
-      for(let i = 0; i < resultAll.length; i++) {
-        resultAll[i].type = 'all'
-      }
-      setDataAll(resultAll)
-      // setData(dataLocal, resultAll)
+      .then(response => response.json())
+      .then(response => {
+        console.log(response)
+        setDataAll(response.map(x => {
+          x.type = 'all'
+          return x
+        }))
+      })
     }
 
-    async function getFilesLocal() {
+    function getFilesLocal() {
       const token = localStorage.getItem('token')
 
-      const responseAll = await fetch('http://localhost:8000/user/file', {
+      fetch('http://localhost:8000/user/file', {
         headers: {
           'Authorization': `Bearer ${token}`
         },
       })
-      const resultAll = await responseAll.json()
+      .then(response => response.json())
+      .then(response => {
+        console.log(response)
+        setDataLocal(response.map(x => {
+          x.type = 'local'
+          return x
+        }))
+      })
 
       console.log('resultLocal', resultAll);
       for(let i = 0; i < resultAll.length; i++) {
         resultAll[i].type = 'local'
       }
       setDataLocal(resultAll)
-      // setData(resultAll, ty)
     }
 
-    getFiles()
-    getFilesLocal()
+    if (type == "all") {
+      getFiles()
+    } else {
+      getFilesLocal()
+    }
   }, [])
 
   const [open, setOpen] = useState(false)
