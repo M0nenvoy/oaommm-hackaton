@@ -62,18 +62,23 @@ export default function Message({page, filePath, message}) {
       }
       <div className={style.msg}>
         <div>{message.msg}</div>
-        <div className={style.wrapperMetadata}>
-              <div className={style.link} onClick={handleItem}>
-                {filePath1}
-              </div>
-          {
-            page ?
-              <div className={style.page}>
-                Страница - {page}
-              </div>
-            :
-              <></>
-          }
+          <div className={style.wrapperMetadata}>
+            {
+              filePath ?
+                <div className={style.link} onClick={handleItem}>
+                  {filePath}
+                </div>
+                :
+                <></>
+            }
+            {
+              page && message.who === 'me' ?
+                <div className={style.page}>
+                  Страница - {page}
+                </div>
+              :
+                <></>
+            }
         </div>
       </div>
       <div className={message.who === 'me' ? style.copy : style.copyAI} onClick={handleCopy}>

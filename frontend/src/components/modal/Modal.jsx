@@ -141,11 +141,15 @@ function Modal({open, setOpen, nameSelect, dataAll, setDataAll, dataLocal, setDa
               <></>
           }
 
-          <Btn handleClick={handleClick}
+          <Btn
+            // open={open}
+            // setOpen={setOpen}
+            handleClick={handleClick}
             dataAll={dataAll}
             setDataAll={setDataAll}
             dataLocal={dataLocal}
             setDataLocal={setDataLocal}
+            nameSelect={nameSelect}
           />
         </div>
       </div>
