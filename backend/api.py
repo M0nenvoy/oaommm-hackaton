@@ -3,7 +3,6 @@ import json
 import config
 import logging
 import uuid
-import requests
 
 import db
 import filemeta
@@ -122,9 +121,10 @@ def process_message(message: dto.message_rq):
         add_message_to_history(
             username=message.username,
             entry=message.chat_id,
-            msg=response.msg,
+            msg=response["msg"],
             role="assistant"
         )
+        
         return response
     except Exception as e:
         raise Exception("Не удалось получить ответ от ии" + str(e))
