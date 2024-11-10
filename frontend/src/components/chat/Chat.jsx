@@ -7,7 +7,7 @@ import '../../App.css'
 
 const ws = new WebSocket("ws://localhost:8000/ws");
 
-function Chat({form, setForm}) {
+function Chat({form, setForm, setMessagesList}) {
   const [value, setValue] = useState('')
   const messagesRef = useRef(null)
   const [chunk, setChunk] = useState('')
@@ -67,7 +67,7 @@ function Chat({form, setForm}) {
         <div className={style.exit} onClick={handleExit}>Выход</div>
       </div>
       <Messages form={form} setForm={setForm} messagesRef={messagesRef} />
-      <Send ws={ws} value={value} setValue={setValue} form={form} setForm={setForm} messagesRef={messagesRef} />
+      <Send setMessagesList={setMessagesList} ws={ws} value={value} setValue={setValue} form={form} setForm={setForm} messagesRef={messagesRef} />
     </div>
   )
 }

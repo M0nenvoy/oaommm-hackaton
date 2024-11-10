@@ -4,7 +4,7 @@ import Btn from '../res/Btn'
 import style from './style.module.css'
 import UploadsFile from './UploadsFile';
 
-function Modal({open, setOpen, nameSelect}) {
+function Modal({open, setOpen, nameSelect, dataAll, setDataAll, dataLocal, setDataLocal}) {
   const fileInputRef = useRef(null);
   const [selectedFile, setSelectedFile] = useState(null);  // Хранит выбранный файл
   const [fileName, setFileName] = useState("Добавить файл");
@@ -141,7 +141,12 @@ function Modal({open, setOpen, nameSelect}) {
               <></>
           }
 
-          <Btn handleClick={handleClick}  />
+          <Btn handleClick={handleClick}
+            dataAll={dataAll}
+            setDataAll={setDataAll}
+            dataLocal={dataLocal}
+            setDataLocal={setDataLocal}
+          />
         </div>
       </div>
     </div>

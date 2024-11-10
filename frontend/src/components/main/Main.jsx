@@ -8,6 +8,7 @@ import Select from "../select/Select"
 function Main() {
   const [typeSelect, setTypeSelect] = useState('all')
   const [form, setForm] = useState([])
+  const [messagesList, setMessagesList] = useState([])
 
   if(!localStorage.getItem('token') || undefined === localStorage.getItem('token')) {
     window.location.href = '/register'
@@ -16,12 +17,15 @@ function Main() {
   return (
     <>
       <Place flag={true}>
-        <Wrapper setForm={setForm} />
+        <Wrapper setForm={setForm} messagesList={messagesList} setMessagesList={setMessagesList} />
       </Place>
-      <Chat form={form} setForm={setForm} />
+      <Chat form={form} setForm={setForm} setMessagesList={setMessagesList} />
       <Place flag={false}>
         <Select name={typeSelect} options={['all', 'local']} setTypeSelect={setTypeSelect} />
-        <Manual type={typeSelect} typeSelect={typeSelect} />
+        <Manual 
+          type={typeSelect} 
+          typeSelect={typeSelect}
+        />
       </Place>
       <div className='copied'>Данные скопировались!</div>
     </>
