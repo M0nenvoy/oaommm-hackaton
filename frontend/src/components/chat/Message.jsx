@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import style from './style.module.css'
 
-export default function Message({message}) {
-  const [text, setText] = useState(message?.msg);
-  const [page, setPage] = useState(message?.metadata?.page)
-  const [filePath, setFilePath] = useState(message?.metadata?.file_path)
+export default function Message({page, filePath, message}) {
+  console.log(page, filePath)
+  const [text, setText] = useState(message);
+  console.log(message)
+  const [page1, setPage] = useState(page)
+  const [filePath1, setFilePath] = useState(filePath)
 
   function handleCopy() {
     navigator.clipboard.writeText(text)
@@ -21,8 +23,8 @@ export default function Message({message}) {
   }
 
   async function handleItem() {
-    console.log(filePath);
-    const response = await fetch(`http://localhost:8000/file/download?id=${filePath}`, {
+    console.log(filePath1);
+    const response = await fetch(`http://localhost:8000/file/download?id=${filePath1}`, {
       headers: {
         'Content-Type': 'application/octet-stream',
       },
@@ -61,14 +63,9 @@ export default function Message({message}) {
       <div className={style.msg}>
         <div>{message.msg}</div>
         <div className={style.wrapperMetadata}>
-          {
-            filePath ?
               <div className={style.link} onClick={handleItem}>
-                {filePath}
+                {filePath1}
               </div>
-              :
-              <></>
-          }
           {
             page ?
               <div className={style.page}>

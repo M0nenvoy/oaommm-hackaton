@@ -59,10 +59,13 @@ embedder_name = "sentence-transformers/paraphrase-multilingual-mpnet-base-v2"
 snapshot_download(repo_id=embedder_name, local_dir="data/paraphrase-multilingual-mpnet-base-v2", cache_dir="data/cache")
 embeddings = embedding_functions.SentenceTransformerEmbeddingFunction(model_name="data/paraphrase-multilingual-mpnet-base-v2")
 
+# Инициализация модели для ранжирования документов
+reranker_model = CrossEncoder('DiTy/cross-encoder-russian-msmarco', max_length=512, device='cuda')
+
 # URL API для генерации текста и заголовки авторизации
 url = 'https://llm.api.cloud.yandex.net/foundationModels/v1/completion'
 headers = {
-    'Authorization': 'Bearer ...',  # Укажите токен авторизации
+    'Authorization': 'Bearer t1.9euelZqZkIyOz8ePncnGkZeJmcydnO3rnpWamc6MkZjHl8zMx5mbj8iQxpLl8_d4Nj9G-e8raUN3_N3z9zhlPEb57ytpQ3f8zef1656Vmo6NjpWJnZHIlczNjc_Pz8-P7_zF656Vmo6NjpWJnZHIlczNjc_Pz8-P.FOvdP319xhW4p7FwDtqZtXKhkOdMBrYtU4utTdVrJS90Uwl7hJJf7EF2lNsP8ADrFMDRFhMGPVCtoQ2wkfM8BQ',
     'Content-Type': 'application/json'
 }
 
@@ -236,8 +239,7 @@ def bot(
     return response.json()['result']['alternatives'][0]['message']['text'], metadatas[rank_result[0]["corpus_id"]]
 
 
-# Инициализация модели для ранжирования документов
-reranker_model = CrossEncoder('DiTy/cross-encoder-russian-msmarco', max_length=512, device='cuda')
+
 
 # Инициализация приложения FastAPI и настройка CORS
 app = FastAPI()

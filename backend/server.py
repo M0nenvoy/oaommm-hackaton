@@ -141,7 +141,8 @@ async def websocket_endpoint(websocket: WebSocket):
                 username = username
             ))
             await websocket.send_json({
-                "msg": response
+                "msg": response,
+                "metadata": response['metadata']
             })
         except HTTPException as e:
             logger.error("Ошибка в сокете: " + e.detail)

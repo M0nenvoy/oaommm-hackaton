@@ -3,7 +3,7 @@ import style from './style.module.css'
 import Message from './Message';
 import PropTypes from "prop-types";
 
-function Messages({form, setForm, messagesRef}) {
+function Messages({page, filePath, form, setForm, messagesRef}) {
   useEffect(() => {
     console.log(form);
     if (messagesRef.current) {
@@ -15,7 +15,7 @@ function Messages({form, setForm, messagesRef}) {
   return (
     <div ref={messagesRef} className={style.messagesContainer}>
       {form.map((item, index) => (
-        <Message message={item} key={index} />
+        <Message page={page} filePath={filePath} message={item} key={index} />
       ))}
     </div>
   )

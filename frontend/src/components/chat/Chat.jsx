@@ -12,7 +12,8 @@ function Chat({form, setForm, setMessagesList}) {
   const messagesRef = useRef(null)
   const [chunk, setChunk] = useState('')
   const [login, setLogin] = useState('')
-
+  const [page, setPage] = useState('')
+  const [filepath, setFilePath] = useState('')
   useEffect(() => {
     ws.onopen = () => {
       console.log('websocket open');
@@ -26,10 +27,10 @@ function Chat({form, setForm, setMessagesList}) {
     ws.onmessage = function(event) {
       const message = event.data
       const newChunk = JSON.parse(message).msg
-
+      console.log(JSON.parse(message))
       lastIndex.msg += newChunk.msg
 
-      const metadata = newChunk.metadata
+      const metadata = JSON.parse(message).metadata
       const page = metadata.page
       const filePath = metadata.file_path
 
@@ -38,9 +39,12 @@ function Chat({form, setForm, setMessagesList}) {
         const updatedData = [...prevData];
 
         updatedData[updatedData.length - 1].msg = lastIndex.msg;
-        updatedData[updatedData.length - 1].metadata.page = lastIndex.metadata.page;
-        updatedData[updatedData.length - 1].metadata.file_path = lastIndex.metadata.file_path;
+        console.log(updatedData, lastIndex)
+        // updatedData[updatedData.length - 1].metadata.page = page;
+        // updatedData[updatedData.length - 1].metadata.file_path = filePath;
 
+        setPage(page)
+        setFilePath(filePath)
         console.log(updatedData[updatedData.length - 1]);
 
         return updatedData;
@@ -73,7 +77,7 @@ function Chat({form, setForm, setMessagesList}) {
         <div className={style.slu}>Аккаунт: <strong>{login}</strong></div>
         <div className={style.exit} onClick={handleExit}>Выход</div>
       </div>
-      <Messages form={form} setForm={setForm} messagesRef={messagesRef} />
+      <Messages page={page} filePath={filepath} form={form} setForm={setForm} messagesRef={messagesRef} />
       <Send setMessagesList={setMessagesList} ws={ws} value={value} setValue={setValue} form={form} setForm={setForm} messagesRef={messagesRef} />
     </div>
   )
