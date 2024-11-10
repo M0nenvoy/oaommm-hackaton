@@ -2,9 +2,9 @@ import { useState } from 'react';
 import style from './style.module.css'
 
 export default function Message({message}) {
-  const [text, setText] = useState(message.msg);
-  const [page, setPage] = useState(message.metadata.page)
-  const [filePath, setFilePath] = useState(message.metadata.file_path)
+  const [text, setText] = useState(message?.msg);
+  const [page, setPage] = useState(message?.metadata?.page)
+  const [filePath, setFilePath] = useState(message?.metadata?.file_path)
 
   function handleCopy() {
     navigator.clipboard.writeText(text)

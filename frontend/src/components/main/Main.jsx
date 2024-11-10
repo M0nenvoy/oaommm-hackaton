@@ -28,6 +28,9 @@ function Main() {
         />
       </Place>
       <div className='copied'>Данные скопировались!</div>
+      <div className="loader display-none">
+        <div className="lds-facebook"><div></div><div></div><div></div></div>
+      </div>
     </>
   )
 }

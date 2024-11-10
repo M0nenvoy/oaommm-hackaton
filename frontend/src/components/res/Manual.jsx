@@ -42,12 +42,6 @@ function Manual({type, typeSelect}) {
           return x
         }))
       })
-
-      console.log('resultLocal', resultAll);
-      for(let i = 0; i < resultAll.length; i++) {
-        resultAll[i].type = 'local'
-      }
-      setDataLocal(resultAll)
     }
 
     if (type == "all") {

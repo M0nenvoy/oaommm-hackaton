@@ -72,12 +72,14 @@ input::placeholder {
   margin-bottom: 10px;
   align-self: flex-end;
   border-radius: 11px;
+  border-bottom-right-radius: 0;
 }
 .messageAI {
   position: relative;
   display: flex;
   padding: 10px;
   border-radius: 11px;
+  border-bottom-left-radius: 0;
   max-width: 80%;
   height: 100%;
   background: #7395ae;
@@ -93,8 +95,8 @@ input::placeholder {
   width: 40px;
   height: 40px;
   position: absolute;
-  right: 10px;
-  bottom: -40px;
+  right: 0px;
+  bottom: -39px;
   background: #379683;
   border-bottom-left-radius: 11px;
   border-bottom-right-radius: 11px;
@@ -103,7 +105,7 @@ input::placeholder {
 }
 
 .copyAI {
-  left: 10px;;
+  left: 0px;;
   background: #7395ae;
 }
 
