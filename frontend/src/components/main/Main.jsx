@@ -6,10 +6,8 @@ import Manual from "../res/Manual"
 import Select from "../select/Select"
 
 function Main() {
-  const [value, setValue] = useState('')
-  const [errorInput, setErrorInput] = useState(false)
-  const options = ['option 1', 'option 2', 'option 3']
   const [typeSelect, setTypeSelect] = useState('all')
+  const [form, setForm] = useState([])
 
   if(!localStorage.getItem('token') || undefined === localStorage.getItem('token')) {
     window.location.href = '/register'
@@ -18,12 +16,12 @@ function Main() {
   return (
     <>
       <Place flag={true}>
-        <Wrapper />
+        <Wrapper setForm={setForm} />
       </Place>
-      <Chat />
+      <Chat form={form} setForm={setForm} />
       <Place flag={false}>
-        <Select name='all' options={['all', 'local']} setTypeSelect={setTypeSelect} />
-        <Manual type={typeSelect} />
+        <Select name={typeSelect} options={['all', 'local']} setTypeSelect={setTypeSelect} />
+        <Manual type={typeSelect} typeSelect={typeSelect} />
       </Place>
       <div className='copied'>Данные скопировались!</div>
     </>

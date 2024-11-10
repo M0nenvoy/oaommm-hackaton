@@ -7,48 +7,55 @@ import '../../App.css'
 
 const ws = new WebSocket("ws://localhost:8000/ws");
 
-function Chat() {
+function Chat({form, setForm}) {
   const [value, setValue] = useState('')
-  const [form, setForm] = useState([])
   const messagesRef = useRef(null)
   const [chunk, setChunk] = useState('')
+  const [login, setLogin] = useState('')
 
   useEffect(() => {
     ws.onopen = () => {
       console.log('websocket open');
     }
 
+    setLogin(localStorage.getItem('username'))
+
     const cloneItems = [...form]
     let lastIndex = cloneItems[form.length - 1]
 
     ws.onmessage = function(event) {
       const message = event.data
-      console.log(message)
       const newChunk = JSON.parse(message).msg.msg
-      console.log(newChunk)
 
       lastIndex.msg += newChunk
 
-      // setInterval(() => {
-        lastIndex.msg += newChunk
-        console.log(lastIndex.msg);
-        setForm((prevData) => {
-          const updatedData = [...prevData];
+      lastIndex.msg += newChunk
+      console.log(lastIndex.msg);
+      setForm((prevData) => {
+        const updatedData = [...prevData];
 
-          updatedData[updatedData.length - 1].msg = lastIndex.msg;
-          console.log(updatedData)
-          return updatedData;
-        })
-      // }, 1000)
+        updatedData[updatedData.length - 1].msg = lastIndex.msg;
+
+        return updatedData;
+      })
 
       // const typing = document.querySelector('.typing')
       // typing.classList.remove('typing-active')
     };
+
+    // ws.onclose = function() {
+    //   localStorage.removeItem('idChat')
+      // localStorage.removeItem('token')
+      // localStorage.removeItem('username')
+    // }
   }, [form])
 
   function handleExit() {
     console.log('exit');
     localStorage.removeItem('token')
+    localStorage.removeItem('username')
+
+    setLogin('')
 
     window.location.href = '/register'
   }
@@ -56,7 +63,7 @@ function Chat() {
   return (
     <div className={style.containerChat}>
       <div className={style.header}>
-        <div className={style.slu}>еще какая-то инфа</div>
+        <div className={style.slu}>Аккаунт: <strong>{login}</strong></div>
         <div className={style.exit} onClick={handleExit}>Выход</div>
       </div>
       <Messages form={form} setForm={setForm} messagesRef={messagesRef} />

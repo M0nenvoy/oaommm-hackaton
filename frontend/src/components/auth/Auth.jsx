@@ -35,6 +35,7 @@ function Auth() {
     window.location.href = '/'
 
     localStorage.setItem('token', result.access_token)
+    localStorage.setItem('username', value)
   }
 
   async function handleAuth(e) {
@@ -60,6 +61,7 @@ function Auth() {
     window.location.href = '/'
 
     localStorage.setItem('token', result.access_token)
+    localStorage.setItem('username', value)
   }
 
   return (

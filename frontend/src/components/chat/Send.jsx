@@ -9,16 +9,7 @@ function Send({ws, value, setValue, form, setForm, messagesRef}) {
   async function handleForm(e) {
     e.preventDefault()
 
-    // const response1 = await fetch('http://localhost:8000/user/history', {
-    //   method: 'POST',
-    //   headers: {
-    //     'Access-Control-Allow-Origin': '*',
-    //     'Content-Type': 'application/json'
-    //   },
-    //   body: JSON.stringify({'username': 'Anton'})
-    // })
-    // const res1 = await response1.json()
-    // console.log(res1);
+    const token = localStorage.getItem('token')
 
     setForm([...form, {
       msg: value,
@@ -28,11 +19,16 @@ function Send({ws, value, setValue, form, setForm, messagesRef}) {
       who: ''
     }])
 
-    const token = localStorage.getItem('token')
+    let idChat = localStorage.getItem('idChat')
+    if(!idChat) {
+      idChat = new Date().getTime()
+      localStorage.setItem('idChat', idChat)
+      console.log(idChat, 'idChat');
+    }
 
     ws.send(JSON.stringify({
       msg: value,
-      chat_id: 'dfhjdfhk12',
+      chat_id: idChat,
       access_token: token
     }))
 

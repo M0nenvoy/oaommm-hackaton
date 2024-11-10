@@ -15,6 +15,7 @@ from fastapi import (
 )
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 
 # -------- SETUP ---------- #
 app = FastAPI()
@@ -66,12 +67,43 @@ def user(username: Annotated[str, Depends(get_current_user)]):
 
 # -------- DOCS ---------- #
 @app.post("/user/upload")
-async def upload(files: list[UploadFile], username: Annotated[str, Depends(get_current_user)]):
+async def userupload(files: list[UploadFile], username: Annotated[str, Depends(get_current_user)]):
     try:
-        await api.upload(username, files)
+        await api.upload(username, "local", files)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
+@app.post("/upload")
+async def upload(files: list[UploadFile]):
+    try:
+        await api.upload("", "global", files)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+@app.get("/file")
+async def get_files():
+    try:
+        return api.get_global_files()
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/user/file")
+async def get_files(username: Annotated[str, Depends(get_current_user)]):
+    try:
+        return api.get_user_files(username)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
+@app.get("/file/download")
+async def download(id: str):
+    name, path = api.download(id)
+    if not name or not path:
+        raise HTTPException(status_code=400, detail=str("Файл с таким id не существует"))
+    return FileResponse(
+        path,
+        filename=name,
+        media_type="application/octet-stream"
+    )
 
 # -------- HISTORY ------ #
 @app.post("/user/history")
@@ -104,7 +136,7 @@ async def websocket_endpoint(websocket: WebSocket):
         try:
             username = await get_current_user(data["access_token"])
             response = api.process_message(dto.message_rq(
-                chat_id = data["chat_id"],
+                chat_id = str(data["chat_id"]),
                 msg = data["msg"],
                 username = username
             ))
