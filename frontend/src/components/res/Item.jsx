@@ -5,6 +5,8 @@ function Item({item, type}) {
 
   async function handleItem() {
     console.log(item);
+    console.log(item.id);
+    
     const response = await fetch(`http://localhost:8000/file/download?id=${item.id}`, {
       headers: {
         'Content-Type': 'application/octet-stream',
