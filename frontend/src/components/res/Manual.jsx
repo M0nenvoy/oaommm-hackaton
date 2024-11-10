@@ -46,7 +46,7 @@ function Manual({type, typeSelect}) {
 
     getFiles()
     getFilesLocal()
-  }, [dataAll, dataLocal])
+  }, [])
 
   const [open, setOpen] = useState(false)
 
