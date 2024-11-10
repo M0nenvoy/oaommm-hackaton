@@ -3,7 +3,6 @@ import json
 import config
 import logging
 import uuid
-import requests
 
 import db
 import filemeta
@@ -38,7 +37,7 @@ async def upload(username: str, type: str, files: list[UploadFile]):
         raise Exception("Пользователь не существует")  
     for file in files:
         try:
-            id = str(file.filename)
+            id = str(uuid.uuid4())
             ids.append(id)
             db.user_save_doc(username, file, name=id)
             filemeta.add(filemeta.Filemeta(id=id, name=file.filename, owner=username, type=type))
@@ -122,9 +121,10 @@ def process_message(message: dto.message_rq):
         add_message_to_history(
             username=message.username,
             entry=message.chat_id,
-            msg=response.msg,
+            msg=response["msg"],
             role="assistant"
         )
-        return response
+        
+        return response.json()
     except Exception as e:
         raise Exception("Не удалось получить ответ от ии" + str(e))

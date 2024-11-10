@@ -7,7 +7,7 @@ import '../../App.css'
 
 const ws = new WebSocket("ws://localhost:8000/ws");
 
-function Chat({form, setForm}) {
+function Chat({form, setForm, setMessagesList}) {
   const [value, setValue] = useState('')
   const messagesRef = useRef(null)
   const [chunk, setChunk] = useState('')
@@ -25,22 +25,29 @@ function Chat({form, setForm}) {
 
     ws.onmessage = function(event) {
       const message = event.data
-      const newChunk = JSON.parse(message).msg.msg
+      const newChunk = JSON.parse(message).msg
 
-      lastIndex.msg += newChunk
+      lastIndex.msg += newChunk.msg
 
-      lastIndex.msg += newChunk
+      const metadata = newChunk.metadata
+      const page = metadata.page
+      const filePath = metadata.file_path
+
       console.log(lastIndex.msg);
       setForm((prevData) => {
         const updatedData = [...prevData];
 
         updatedData[updatedData.length - 1].msg = lastIndex.msg;
+        updatedData[updatedData.length - 1].metadata.page = lastIndex.metadata.page;
+        updatedData[updatedData.length - 1].metadata.file_path = lastIndex.metadata.file_path;
+
+        console.log(updatedData[updatedData.length - 1]);
 
         return updatedData;
       })
 
-      // const typing = document.querySelector('.typing')
-      // typing.classList.remove('typing-active')
+      const typing = document.querySelector('.typing')
+      typing.classList.remove('typing-active')
     };
 
     // ws.onclose = function() {
@@ -67,7 +74,7 @@ function Chat({form, setForm}) {
         <div className={style.exit} onClick={handleExit}>Выход</div>
       </div>
       <Messages form={form} setForm={setForm} messagesRef={messagesRef} />
-      <Send ws={ws} value={value} setValue={setValue} form={form} setForm={setForm} messagesRef={messagesRef} />
+      <Send setMessagesList={setMessagesList} ws={ws} value={value} setValue={setValue} form={form} setForm={setForm} messagesRef={messagesRef} />
     </div>
   )
 }

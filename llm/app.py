@@ -25,6 +25,8 @@ from fastapi import FastAPI, Body
 
 from fastapi.middleware.cors import CORSMiddleware
 
+import re
+
 
 import requests
 
@@ -64,7 +66,7 @@ temp = 0.1
 chatbot = []
 
 client = PersistentClient(path="test", settings=Settings(allow_reset=True))
-client.reset()
+# client.reset()
 embedder_name = "sentence-transformers/paraphrase-multilingual-mpnet-base-v2"
 snapshot_download(repo_id=embedder_name, local_dir="data/paraphrase-multilingual-mpnet-base-v2", cache_dir="data/cache")
 embeddings = embedding_functions.SentenceTransformerEmbeddingFunction(model_name="data/paraphrase-multilingual-mpnet-base-v2")
@@ -72,7 +74,7 @@ url = 'https://llm.api.cloud.yandex.net/foundationModels/v1/completion'
 
 # Заголовки
 headers = {
-    'Authorization': 'Bearer t1.9euelZqOlcrPyZicjZSWk5qMisuPze3rnpWamc6MkZjHl8zMx5mbj8iQxpLl8_dRGUJG-e8NUDwv_t3z9xFIP0b57w1QPC_-zef1656VmsqemcmLysmLkYubns_Nm8mS7_zF656VmsqemcmLysmLkYubns_Nm8mS.ud-kuGF_AkCTanUYu_J2_8U_bkOBR1bxbh7EJH5RapYTcDwSdxVWh8aRtAHFudKnMGtxVHstXJ3gS-Ydx68ECQ',
+    'Authorization': 'Bearer t1.9euelZqZkIyOz8ePncnGkZeJmcydnO3rnpWamc6MkZjHl8zMx5mbj8iQxpLl8_d4Nj9G-e8raUN3_N3z9zhlPEb57ytpQ3f8zef1656Vmo6NjpWJnZHIlczNjc_Pz8-P7_zF656Vmo6NjpWJnZHIlczNjc_Pz8-P.FOvdP319xhW4p7FwDtqZtXKhkOdMBrYtU4utTdVrJS90Uwl7hJJf7EF2lNsP8ADrFMDRFhMGPVCtoQ2wkfM8BQ',
     'Content-Type': 'application/json'
 }
 
@@ -118,16 +120,24 @@ def add_file_to_db(file_paths, collection, chunk_size, chunk_overlap):
     return None
 
 
-def retrieve(history, collection, k_documents):
-    retrieved_docs = ""
+def retrieve(history, collection, default_collection, k_documents):
+    last_user_message = history[-1]["text"]
+    retrieved_docs = []
+    metadatas = []
+    if default_collection:
+        res = default_collection.query(
+                query_texts=[last_user_message],
+                n_results=k_documents,
+            )
+        retrieved_docs.extend(res['documents'][0])
+        metadatas.extend(res['metadatas'][0])
     if collection:
-        last_user_message = history[-1]["text"]
         res = collection.query(
                 query_texts=[last_user_message],
                 n_results=k_documents,
             )
-        retrieved_docs = res['documents'][0]
-        metadatas = res['metadatas'][0]
+        retrieved_docs.extend(res['documents'][0])
+        metadatas.extend(res['metadatas'][0])
     return retrieved_docs, metadatas
 
 
@@ -145,9 +155,9 @@ def load_single_document(file_path: str) -> Document:
 
 
 def process_text(text):
-    lines = text.split("\n")
-    lines = [line for line in lines if len(line.strip()) > 2]
-    text = "\n".join(lines).strip()
+    text = text.replace(' \n', '').replace('\n\n', '\n').replace('\n\n\n', '\n').strip()
+    text = re.sub(r"(?<=\n)\d{1,2}", "", text)
+    text = re.sub(r"\b(?:the|this)\s*slide\s*\w+\b", "", text, flags=re.IGNORECASE)
     if len(text) < 10:
         return None
     return text
@@ -191,6 +201,7 @@ def bot(
     print(retrieved_docs[rank_result[0]["corpus_id"]])
     print(metadatas[rank_result[0]["corpus_id"]])
     file_answer = metadatas[rank_result[0]["corpus_id"]]['file_path']
+    print(response.json())
     return response.json()['result']['alternatives'][0]['message']['text'], metadatas[rank_result[0]["corpus_id"]]
 
 
@@ -233,7 +244,8 @@ def del_files(data=Body()):
 def question_answering(data=Body()):
     global chatbot, k_documents
     collection = client.get_or_create_collection(data['username'],embedding_function=embeddings)
-    retrieved_docs, metadatas = retrieve(data['messages'], collection, k_documents)
+    default_collection = client.get_or_create_collection("default",embedding_function=embeddings)
+    retrieved_docs, metadatas = retrieve(data['messages'], collection, default_collection, k_documents)
     result, metadata = bot(data['messages'], retrieved_docs, top_p, top_k, temp, metadatas)
     chatbot = []
     return {'msg': result,

@@ -1,7 +1,7 @@
 import style from './style.module.css'
 import '../../App.css'
 
-function Send({ws, value, setValue, form, setForm, messagesRef}) {
+function Send({ws, value, setValue, form, setForm, messagesRef, setMessagesList}) {
   function handleInput(event) {
     setValue(event.target.value);
   }
@@ -26,14 +26,33 @@ function Send({ws, value, setValue, form, setForm, messagesRef}) {
       console.log(idChat, 'idChat');
     }
 
+    console.log(idChat);
+    
     ws.send(JSON.stringify({
       msg: value,
-      chat_id: idChat,
+      chat_id: String(idChat),
       access_token: token
     }))
 
     const typing = document.querySelector('.typing')
     typing.classList.add('typing-active')
+
+    async function rr() {
+      const token = localStorage.getItem('token')
+
+      const responseChatId = await fetch('http://localhost:8000/user/history', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      // const resultChatId = await responseChatId.json()
+      responseChatId.json().then((result) => {
+        result = result.filter((msg => msg.date !== undefined))
+        console.log(result);
+        setMessagesList(result.reverse())
+      })
+    }
+    rr()
 
     setValue('')
   }
@@ -45,7 +64,7 @@ function Send({ws, value, setValue, form, setForm, messagesRef}) {
           <div className="lds-ellipsis lds-ellipsis-none"><div></div><div></div><div></div><div></div></div>
           <div className='typing-text'>Машинка ищет лучшие ответы...</div>
         </div>
-        <input 
+        <input
           type="text"
           placeholder='Введите сообщение'
           onChange={handleInput}

@@ -13,7 +13,7 @@ def process_message(username, history: list):
         "username": username
     }
     response = requests.post(config.AI_ANSWER, json=data)
-    return response
+    return response.json()
 
 def upload(username: str, filepaths: list[str]):
     data = {

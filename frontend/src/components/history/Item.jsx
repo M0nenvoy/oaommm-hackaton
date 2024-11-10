@@ -17,9 +17,21 @@ function Item({message, timeNext, index}) {
     }
   }, [timeNext])
 
-  function handleItemHistory() {
-    console.log('click click click');
+  async function handleItemHistory() {
     console.log(message.id);
+    const token = localStorage.getItem('token')
+
+    const response = await fetch(`http://localhost:8000/user/history`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({id: message.id})
+    })
+    const result = await response.json()
+    console.log(result);
+    
   }
   
   return (
@@ -34,7 +46,7 @@ function Item({message, timeNext, index}) {
           <></>
       }
       <div className={style.itemHistoryList} onClick={handleItemHistory}>
-        {message.msg}
+        {message.text}
       </div>
     </div>
   )

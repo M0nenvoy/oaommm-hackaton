@@ -2,24 +2,22 @@ import { useEffect, useState } from "react"
 import Item from "./Item"
 import style from './style.module.css'
 
-function Wrapper({setForm}) {
-  const [messagesList, setMessagesList] = useState([])
-
+function Wrapper({setForm, messagesList, setMessagesList}) {
   useEffect(() => {
     async function rr() {
       const token = localStorage.getItem('token')
 
-      // const responseChatId = await fetch('http://localhost:8000/user/history', {
-      //   headers: {
-      //     'Authorization': `Bearer ${token}`
-      //   }
-      // })
-      // // const resultChatId = await responseChatId.json()
-      // responseChatId.json().then((result) => {
-      //   result = result.filter((msg => msg.date !== undefined))
-      //   console.log(result);
-      //   setMessagesList(result)
-      // })
+      const responseChatId = await fetch('http://localhost:8000/user/history', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      // const resultChatId = await responseChatId.json()
+      responseChatId.json().then((result) => {
+        result = result.filter((msg => msg.date !== undefined))
+        console.log(result);
+        setMessagesList(result.reverse())
+      })
   
       console.log(messagesList);
       // setMessagesList(resultChatId)
