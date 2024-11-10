@@ -37,7 +37,7 @@ async def upload(username: str, type: str, files: list[UploadFile]):
         raise Exception("Пользователь не существует")  
     for file in files:
         try:
-            id = str(uuid.uuid4())
+            id = str(file.filename)
             ids.append(id)
             db.user_save_doc(username, file, name=id)
             filemeta.add(filemeta.Filemeta(id=id, name=file.filename, owner=username, type=type))
@@ -125,6 +125,6 @@ def process_message(message: dto.message_rq):
             role="assistant"
         )
         
-        return response.json()
+        return response
     except Exception as e:
         raise Exception("Не удалось получить ответ от ии" + str(e))
