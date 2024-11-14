@@ -1,7 +1,7 @@
 
 
 from typing import List
-from Splitter import Splitter
+from utils.Splitter import Splitter
 
 
 
